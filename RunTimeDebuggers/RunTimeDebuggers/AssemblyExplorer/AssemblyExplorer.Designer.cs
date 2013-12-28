@@ -149,7 +149,6 @@
             this.loadAliasesToolStripMenuItem,
             this.saveAliasesToolStripMenuItem,
             this.autoAliasAllMembersOfCurrentAssemblyToolStripMenuItem});
-            this.toolStripDropDownButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton2.Image")));
             this.toolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton2.Name = "toolStripDropDownButton2";
             this.toolStripDropDownButton2.Size = new System.Drawing.Size(38, 22);
@@ -330,7 +329,6 @@
             // mnuRunDebugger
             // 
             this.mnuRunDebugger.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.mnuRunDebugger.Image = ((System.Drawing.Image)(resources.GetObject("mnuRunDebugger.Image")));
             this.mnuRunDebugger.ImageTransparentColor = System.Drawing.Color.White;
             this.mnuRunDebugger.Name = "mnuRunDebugger";
             this.mnuRunDebugger.Size = new System.Drawing.Size(23, 22);
@@ -340,7 +338,6 @@
             // mnuStepInto
             // 
             this.mnuStepInto.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.mnuStepInto.Image = ((System.Drawing.Image)(resources.GetObject("mnuStepInto.Image")));
             this.mnuStepInto.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.mnuStepInto.Name = "mnuStepInto";
             this.mnuStepInto.Size = new System.Drawing.Size(23, 22);
