@@ -277,14 +277,14 @@
     <EmbeddedResource Include="ActionsForm.resx">
       <DependentUpon>ActionsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\AssemblyExplorer.resx">
+      <DependentUpon>AssemblyExplorer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AssemblyExplorer\CallGraph.resx">
       <DependentUpon>CallGraph.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AssemblyExplorer\Components\Analysis.resx">
       <DependentUpon>Analysis.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AssemblyExplorer\AssemblyExplorer.resx">
-      <DependentUpon>AssemblyExplorer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AssemblyExplorer\Components\CallStack.resx">
       <DependentUpon>CallStack.cs</DependentUpon>
