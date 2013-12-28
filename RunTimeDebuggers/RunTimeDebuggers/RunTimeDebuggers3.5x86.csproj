@@ -1,0 +1,507 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AD9BD9A7-2B4E-4E0A-8BDF-44AA471CCB5A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RunTimeDebuggers</RootNamespace>
+    <AssemblyName>RunTimeDebuggers</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <PlatformTarget />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\v3.5\x86\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NodeControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Lib\NodeControl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActionsForm.Designer.cs">
+      <DependentUpon>ActionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Analysis\FieldCache.cs" />
+    <Compile Include="AssemblyExplorer\Analysis\MemberCache.cs" />
+    <Compile Include="AssemblyExplorer\Analysis\MethodBaseCache.cs" />
+    <Compile Include="AssemblyExplorer\Analysis\TypeCache.cs" />
+    <Compile Include="AssemblyExplorer\CallGraph.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\CallGraph.Designer.cs">
+      <DependentUpon>CallGraph.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Analysis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Analysis.Designer.cs">
+      <DependentUpon>Analysis.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Analysis\AnalysisManager.cs" />
+    <Compile Include="AssemblyExplorer\Components\CodePane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\CodePane.Designer.cs">
+      <DependentUpon>CodePane.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\DebuggerStack.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\DebuggerStack.Designer.cs">
+      <DependentUpon>DebuggerStack.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\ILNodeDiagram.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\MemberMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\CallStack.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\CallStack.Designer.cs">
+      <DependentUpon>CallStack.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Aliases.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Aliases.Designer.cs">
+      <DependentUpon>Aliases.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Bookmarks.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Bookmarks.Designer.cs">
+      <DependentUpon>Bookmarks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\DecryptStrings.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\DecryptStrings.Designer.cs">
+      <DependentUpon>DecryptStrings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Instances.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\Instances.Designer.cs">
+      <DependentUpon>Instances.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\FindString.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\FindString.Designer.cs">
+      <DependentUpon>FindString.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\TreeNodeControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\ResourcePane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\ResourcePane.Designer.cs">
+      <DependentUpon>ResourcePane.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\SearchTypeOrMember.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\SearchTypeOrMember.Designer.cs">
+      <DependentUpon>SearchTypeOrMember.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\TypeAnalysis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\MemberAnalysis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Debugging\ILDebugManager.cs" />
+    <Compile Include="AssemblyExplorer\Disassembler.cs" />
+    <Compile Include="AssemblyExplorer\DumpManager.cs" />
+    <Compile Include="AssemblyExplorer\FormsFlow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\FormsFlow.Designer.cs">
+      <DependentUpon>FormsFlow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\IAssemblyBrowser.cs" />
+    <Compile Include="AssemblyExplorer\Debugging\ILDebugger.cs" />
+    <Compile Include="AssemblyExplorer\ILGeneratorHelper.cs" />
+    <Compile Include="AssemblyExplorer\InstanceFinderManager.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\AbstractAssemblyNode.cs" />
+    <Compile Include="AssemblyExplorer\AssemblyExplorer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\AssemblyExplorer.Designer.cs">
+      <DependentUpon>AssemblyExplorer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\ResourceNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\ResourcesNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\InstanceNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\EventNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Type\BaseTypesNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\ConstructorNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Type\BaseTypeNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\MemberNode.cs" />
+    <Compile Include="AssemblyExplorer\ILInstruction.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\MethodNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\AssemblyNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\ReferenceNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\ReferencesNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\PropertyNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Member\FieldNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Assembly\NamespaceNode.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\StackFrameNode.cs" />
+    <Compile Include="Console Debugger\AbstractDebugWriter.cs" />
+    <Compile Include="Console Debugger\ConsoleDebugger.cs" />
+    <Compile Include="Console Debugger\ConsoleWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Console Debugger\ConsoleWindow.designer.cs">
+      <DependentUpon>ConsoleWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Console Debugger\ConsoleWriter.cs" />
+    <Compile Include="Console Debugger\DebugWriter.cs" />
+    <Compile Include="Console Debugger\TraceWriter.cs" />
+    <Compile Include="Controls\GraphExplorer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\InputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\InputBox.Designer.cs">
+      <DependentUpon>InputBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\RemovableTabControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Helpers\AliasManager.cs" />
+    <Compile Include="Helpers\BookmarkManager.cs" />
+    <Compile Include="Helpers\BreakpointManager.cs" />
+    <Compile Include="Helpers\StreamHelper.cs" />
+    <Compile Include="Helpers\TaskFactory.cs" />
+    <Compile Include="AssemblyExplorer\Nodes\Type\TypeNode.cs" />
+    <Compile Include="Controls\NavigatableTreeView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Helpers\IconHelper.cs" />
+    <Compile Include="Helpers\VisualizerHelper.cs" />
+    <Compile Include="Locals Debugger\ControlIconManager.cs" />
+    <Compile Include="Locals Debugger\ControlTreeNodes\ControlTreeNode.cs" />
+    <Compile Include="Locals Debugger\ExpressionBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Locals Debugger\ExpressionBox.Designer.cs">
+      <DependentUpon>ExpressionBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Locals Debugger\EvaluationTracker.cs" />
+    <Compile Include="Locals Debugger\Nodes\EventNode.cs" />
+    <Compile Include="MissingAssemblyManager.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Locals Debugger\Nodes\ExpressionNode.cs" />
+    <Compile Include="Locals Debugger\Nodes\IEnumerableNode.cs" />
+    <Compile Include="Locals Debugger\Nodes\ILocalNode.cs" />
+    <Compile Include="Locals Debugger\IntellisensePopup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Locals Debugger\IntellisensePopup.Designer.cs">
+      <DependentUpon>IntellisensePopup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Locals Debugger\LocalsWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Locals Debugger\LocalsWindow.Designer.cs">
+      <DependentUpon>LocalsWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Locals Debugger\Nodes\MemberNode.cs" />
+    <Compile Include="Locals Debugger\CSharpExpressionEvaluation.cs" />
+    <Compile Include="Locals Debugger\StatementParser.cs" />
+    <Compile Include="Locals Debugger\StatementTokenizer.cs" />
+    <Compile Include="Controls\TreeList\TreeListColumn.cs" />
+    <Compile Include="Controls\TreeList\TreeListNode.cs" />
+    <Compile Include="Controls\TreeList\TreeListOptions.cs" />
+    <Compile Include="Controls\TreeList\TreeListPainter.cs" />
+    <Compile Include="Controls\TreeList\TreeListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Helpers\TypeHelper.cs" />
+    <Compile Include="Locals Debugger\TypeStore.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ActionsForm.resx">
+      <DependentUpon>ActionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\CallGraph.resx">
+      <DependentUpon>CallGraph.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\Analysis.resx">
+      <DependentUpon>Analysis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\AssemblyExplorer.resx">
+      <DependentUpon>AssemblyExplorer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\CallStack.resx">
+      <DependentUpon>CallStack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\Aliases.resx">
+      <DependentUpon>Aliases.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\Bookmarks.resx">
+      <DependentUpon>Bookmarks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\CodePane.resx">
+      <DependentUpon>CodePane.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\DebuggerStack.resx">
+      <DependentUpon>DebuggerStack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\DecryptStrings.resx">
+      <DependentUpon>DecryptStrings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\Instances.resx">
+      <DependentUpon>Instances.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\FindString.resx">
+      <DependentUpon>FindString.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\ResourcePane.resx">
+      <DependentUpon>ResourcePane.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\SearchTypeOrMember.resx">
+      <DependentUpon>SearchTypeOrMember.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\FormsFlow.resx">
+      <DependentUpon>FormsFlow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Console Debugger\ConsoleWindow.resx">
+      <DependentUpon>ConsoleWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\InputBox.resx">
+      <DependentUpon>InputBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RemovableTabControl.resx">
+      <DependentUpon>RemovableTabControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locals Debugger\ExpressionBox.resx">
+      <DependentUpon>ExpressionBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locals Debugger\IntellisensePopup.resx">
+      <DependentUpon>IntellisensePopup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locals Debugger\LocalsWindow.resx">
+      <DependentUpon>LocalsWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ComponentStructure.cd" />
+    <None Include="Resources\protproperty.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pubfield.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pubproperty.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\eval.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\intfield.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\privfield.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\privproperty.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\protfield.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\toolbox.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\intproperty.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\protmethod.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\privmethod.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pubmethod.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pubmethod1.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\extmethod.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\intmethod.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Struct.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Assembly.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Class.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Delegate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Enum.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Event.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NameSpace.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Interface.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\forward.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Constructor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OverlayInternal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OverlayPrivate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OverlayProtected.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OverlayProtectedInternal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Field.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Property.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Method.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ReferenceFolder.Closed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ReferenceFolder.Open.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\basetype.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\deletesmall.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\bullet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OverlayStatic.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StaticClass.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Resource.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ResourceResourcesFile.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\breakpoint.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CurrentLine.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\propgrid.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\greenarrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\nounlist.txt" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="..\Lib\NodeControl.dll">
+      <Link>Assemblies\NodeControl.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)..\Injector\bin\Debug\$(TargetName)_clr20x86.exe"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

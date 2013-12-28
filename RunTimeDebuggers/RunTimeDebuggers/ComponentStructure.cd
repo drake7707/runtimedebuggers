@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.AssemblyExplorer">
+    <Position X="1.25" Y="4.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>IggGAA05ACYTJQFKAWLAQ41eCFAAgZHUIAlJIkghAEA=</HashCode>
+      <FileName>AssemblyExplorer\AssemblyExplorer.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="mnuMember" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.MemberMenu" Collapsed="true">
+    <Position X="9.25" Y="4" Width="2" />
+    <AssociationLine Name="browser" Type="RunTimeDebuggers.AssemblyExplorer.IAssemblyBrowser" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="10.125" Y="4" />
+        <Point X="10.125" Y="3.434" />
+        <Point X="11" Y="3.434" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAwBAQ2AAgICEQSCkAEBAIQQAAAABEKIAAADAAwAAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\MemberMenu.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="browser" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.NodeControl" Collapsed="true">
+    <Position X="13.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQABAAAAGAAAQAAIAAAAABACAAAAQAAAAAABAAAAQA=</HashCode>
+      <FileName>AssemblyExplorer\Components\NodeControl.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="browser" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.Aliases" Collapsed="true">
+    <Position X="19" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAACAAAFCAAAACAAAAAAAAAAIAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\Aliases.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.Analysis" Collapsed="true">
+    <Position X="14.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAACAAAFCAAAACAAAAAAAAgAAAAI=</HashCode>
+      <FileName>AssemblyExplorer\Components\Analysis.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.DebuggerStack" Collapsed="true">
+    <Position X="10.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgACAAAAAAAACAAAECAAAACAAAAAAAAAAIAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\DebuggerStack.cs</FileName>
+      <NewMemberFileName>AssemblyExplorer\Components\Bookmarks.cs</NewMemberFileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.CallStack" Collapsed="true">
+    <Position X="20.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAKAAAECAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\CallStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.DecryptStrings" Collapsed="true">
+    <Position X="18" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEAAAIAACAAABAAAAKCAAAHABBAAABAAAAAAgAAQCA=</HashCode>
+      <FileName>AssemblyExplorer\Components\DecryptStrings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.FindString" Collapsed="true">
+    <Position X="11.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAACAAABAAAAKCAAAGABBAAAAAAAAAAgAAACA=</HashCode>
+      <FileName>AssemblyExplorer\Components\FindString.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.Instances" Collapsed="true">
+    <Position X="22.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAACAAAAEACACCAEBGAAABCAAAQAAQAAAIACA=</HashCode>
+      <FileName>AssemblyExplorer\Components\Instances.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.MemberAnalysis" Collapsed="true">
+    <Position X="13.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAAAAAAAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\MemberAnalysis.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.TypeAnalysis" Collapsed="true">
+    <Position X="15.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABCAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AssemblyExplorer\Components\TypeAnalysis.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.SearchTypeOrMember" Collapsed="true">
+    <Position X="24" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAACAAABAAAAKCAAAGABBAAAAAAAAAAgAAACA=</HashCode>
+      <FileName>AssemblyExplorer\Components\SearchTypeOrMember.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunTimeDebuggers.AssemblyExplorer.CallGraph" Collapsed="true">
+    <Position X="6.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QQQAgABAACAAAACAAACAAABCCIAAEQAAAAAAAgAAAAA=</HashCode>
+      <FileName>AssemblyExplorer\CallGraph.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="browser" />
+    </ShowAsAssociation>
+  </Class>
+  <Interface Name="RunTimeDebuggers.AssemblyExplorer.IAssemblyBrowser">
+    <Position X="11" Y="1.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAEQQAAAAAAAAEQAAgAAAAAAAA=</HashCode>
+      <FileName>AssemblyExplorer\IAssemblyBrowser.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
