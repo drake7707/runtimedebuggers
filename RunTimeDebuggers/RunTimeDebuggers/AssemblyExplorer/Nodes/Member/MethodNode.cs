@@ -94,7 +94,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             }
         }
 
-        public static string RTFHeader = @"{\rtf1\ansi\ansicpg1252\deff0\deflang2067{\fonttbl{\f0\fnil\fcharset0 Tahoma;}}{\colortbl ;\red0\green77\blue187;\red0\green0\blue255;\red163\green21\blue21;\red255\green0\blue0;}\viewkind4\uc1\pard\f0\fs17@BODY@\par}";
+        
 
 
         public static string GetVisualisation(AbstractAssemblyNode node, MethodBase m)
@@ -112,7 +112,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 il = "Error reading IL: " + ex.GetType().FullName + " - " + ex.Message;
             }
 
-            return RTFHeader.Replace("@BODY@", node.Text + @"\line " + il);
+            return VisualizerHelper.RTFHeader.Replace("@BODY@", VisualizerHelper.GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m)) + @"\line " + node.Text + @"\line " + il);
         }
 
 

@@ -107,7 +107,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public override string Visualization
         {
-            get { return type.ToSignatureString(); }
+            get { return type.GetTypeVisualization(); }
         }
     }
 }

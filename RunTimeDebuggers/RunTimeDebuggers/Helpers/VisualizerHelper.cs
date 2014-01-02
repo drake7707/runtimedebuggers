@@ -12,6 +12,9 @@ namespace RunTimeDebuggers.Helpers
 
     public static class VisualizerHelper
     {
+        private static Dictionary<OpCode, string> opcodeDescriptions;
+
+        public static string RTFHeader = @"{\rtf1\ansi\ansicpg1252\deff0\deflang2067{\fonttbl{\f0\fnil\fcharset0 Tahoma;}}{\colortbl ;\red0\green77\blue187;\red0\green0\blue255;\red163\green21\blue21;\red255\green0\blue0;}\viewkind4\uc1\pard\f0\fs17@BODY@\par}";
 
 
         public static string ToRTFCode(this Disassembler reader)
@@ -532,7 +535,55 @@ namespace RunTimeDebuggers.Helpers
             opcodeDescriptions.Add(OpCodes.Xor, "Computes the bitwise XOR of the top two values on the evaluation stack, pushing the result onto the evaluation stack.");
         }
 
-        private static Dictionary<OpCode, string> opcodeDescriptions;
 
+        private static string GetRTFForValue(object value)
+        {
+            if (value is Type)
+                return "typeof(" + ((Type)value).ToSignatureString() + ")";
+            else if (value is string)
+                return @"\cf3\" + "\"" + (string)(value) + @"\cf0\" + "\"";
+            else
+                return value + "";
+        }
+
+        public static string GetAttributesRTF(IList<CustomAttributeData> cads)
+        {
+            StringBuilder str = new StringBuilder();
+            foreach (var cad in cads)
+            {
+                List<string> arguments = new List<string>();
+                arguments.AddRange(cad.ConstructorArguments.Select(arg => GetRTFForValue(arg.Value)));
+                arguments.AddRange(cad.NamedArguments.Select(arg => arg.MemberInfo.Name + "=" + GetRTFForValue(arg.TypedValue.Value)));
+
+                string typeName = cad.Constructor.DeclaringType.ToSignatureString();
+                str.Append("[" + @"\b " + typeName + @"\b0" + "(" + string.Join(", ", arguments.ToArray()) + ")]" + @"\line ");
+            }
+
+            return str.ToString();
+        }
+
+        public static string GetAssemblyVisualization(this Assembly a)
+        {
+            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(a));
+            string text = AliasManager.Instance.GetFullNameWithAlias(a, a.GetName().Name);
+
+            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        }
+
+        public static string GetMemberVisualization(this MemberInfo m)
+        {
+            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m));
+            string text = m.ToSignatureString();
+
+            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        }
+
+        public static string GetTypeVisualization(this Type m)
+        {
+            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m));
+            string text = m.ToSignatureString(true);
+
+            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        }
     }
 }

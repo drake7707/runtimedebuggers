@@ -38,8 +38,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public void Dump(Assembly assembly, string path)
         {
-
-
             CreateAssembly(assembly, path);
 
             CreateTypeAssociations(assembly);
@@ -52,9 +50,9 @@ namespace RunTimeDebuggers.AssemblyExplorer
             foreach (var c in constructorMapping)
                 BuildConstructorBody(c.Key, c.Value);
 
+            BuildAttributesOfAssembly(assembly, assemblyMapping[assembly]);
+
             FinishAssembly(assembly);
-
-
         }
 
         private void CreateAssembly(Assembly a, string path)
@@ -205,8 +203,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
             foreach (FieldInfo f in t.GetFieldsOfType(false, true))
                 BuildField(f, tbuilder);
 
-
-
             foreach (MethodInfo m in t.GetMethodsOfType(false, true, true))
                 BuildMethod(m, tbuilder);
 
@@ -215,7 +211,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
             foreach (PropertyInfo p in t.GetPropertiesOfType(false, true))
                 BuildProperty(p, tbuilder);
-
         }
 
         private void BuildField(FieldInfo f, TypeBuilder tbuilder)
@@ -382,7 +377,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 throw;
             }
         }
-
 
         private void BuildMethodBody(MethodInfo m, MethodBuilder mbuilder)
         {
@@ -620,6 +614,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             }
         }
 
+        #region Exception handling
         private static void BeginTry(ILGenerator ilGen, ExceptionHandlingClause ex)
         {
             var m_exceptionCount = ilGen.GetField<int>("m_exceptionCount");
@@ -887,6 +882,8 @@ namespace RunTimeDebuggers.AssemblyExplorer
             done.Invoke(exceptionInfo, new object[] { ex.HandlerOffset + ex.HandlerLength });
         }
 
+        #endregion
+
         private static OpCode GetLongForm(ILInstruction instruction)
         {
             OpCode longFormCode = instruction.Code;
@@ -948,6 +945,139 @@ namespace RunTimeDebuggers.AssemblyExplorer
         {
             ParameterBuilder pbuilder = cbuilder.DefineParameter(p.Position, p.Attributes, p.Name);
             parameterMapping.Add(p, pbuilder);
+        }
+
+
+        private void BuildAttributesOfAssembly(Assembly a, AssemblyBuilder abuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(a))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                abuilder.SetCustomAttribute(cbuilder);
+            }
+
+            foreach (Module m in a.GetModules())
+                BuildAttributesOfModule(m, moduleMapping[m]);
+        }
+
+        private void BuildAttributesOfModule(Module m, ModuleBuilder mbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(m))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                mbuilder.SetCustomAttribute(cbuilder);
+            }
+
+            foreach (var t in m.GetTypesSafe())
+            {
+                BuildAttributesOfType(t, (TypeBuilder)typeMapping[t]);
+            }
+        }
+
+        private void BuildAttributesOfType(Type t, TypeBuilder tbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(t))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                tbuilder.SetCustomAttribute(cbuilder);
+            }
+
+            foreach (FieldInfo f in t.GetFieldsOfType(false, true))
+                BuildAttributesOfField(f, fieldMapping[f]);
+
+            foreach (MethodInfo m in t.GetMethodsOfType(false, true, true))
+                BuildAttributesOfMethod(m, methodMapping[m]);
+
+            foreach (ConstructorInfo c in t.GetConstructorsOfType(true))
+                BuildAttributesOfConstructor(c, constructorMapping[c]);
+
+            foreach (PropertyInfo p in t.GetPropertiesOfType(false, true))
+                BuildAttributesOfProperty(p, propertyMapping[p]);
+        }
+
+        private void BuildAttributesOfConstructor(ConstructorInfo c, ConstructorBuilder constructorBuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(c))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                constructorBuilder.SetCustomAttribute(cbuilder);
+            }
+        }
+
+        private void BuildAttributesOfField(FieldInfo f, FieldBuilder fbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(f))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                fbuilder.SetCustomAttribute(cbuilder);
+            }
+        }
+
+        private void BuildAttributesOfProperty(PropertyInfo p, PropertyBuilder pbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(p))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                pbuilder.SetCustomAttribute(cbuilder);
+            }
+        }
+
+        private void BuildAttributesOfMethod(MethodInfo m, MethodBuilder mbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(m))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                mbuilder.SetCustomAttribute(cbuilder);
+            }
+
+            foreach (var p in m.GetParameters())
+                BuildAttributesOfParameter(p, parameterMapping[p]);
+        }
+
+        private void BuildAttributesOfParameter(ParameterInfo p, ParameterBuilder pbuilder)
+        {
+            foreach (var ca in CustomAttributeData.GetCustomAttributes(p))
+            {
+                var cbuilder = GetCustomAttributeBuilder(ca);
+                pbuilder.SetCustomAttribute(cbuilder);
+            }
+        }
+
+
+        private CustomAttributeBuilder GetCustomAttributeBuilder(CustomAttributeData cad)
+        {
+            ConstructorInfo targetConstructor;
+            ConstructorBuilder cb;
+            if (constructorMapping.TryGetValue(cad.Constructor, out cb)) // in mapping, refers to constructed type
+                targetConstructor = cb;
+            else // not in mapping, attribute is not part of the assembly
+                targetConstructor = cad.Constructor;
+
+            var namedFields = cad.NamedArguments.Where(na => na.MemberInfo is FieldInfo)
+                                                .Select(na => new
+                                                {
+                                                    Field = fieldMapping.ContainsKey((FieldInfo)na.MemberInfo) ? fieldMapping[(FieldInfo)na.MemberInfo] : (FieldInfo)na.MemberInfo,
+                                                    Value = na.TypedValue.Value
+                                                })
+                                                .ToArray();
+
+            var namedProperties = cad.NamedArguments.Where(na => na.MemberInfo is PropertyInfo)
+                                                    .Select(na => new
+                                                    {
+                                                        Property = propertyMapping.ContainsKey((PropertyInfo)na.MemberInfo) ? propertyMapping[(PropertyInfo)na.MemberInfo] : (PropertyInfo)na.MemberInfo,
+                                                        Value = na.TypedValue.Value
+                                                    })
+                                                    .ToArray();
+
+            CustomAttributeBuilder cbuilder = new CustomAttributeBuilder(
+                targetConstructor,
+                cad.ConstructorArguments.Select(ca => ca.Value).ToArray(),
+                namedProperties.Select(p => p.Property).ToArray(),
+                namedProperties.Select(p => p.Value).ToArray(),
+                namedFields.Select(f => f.Field).ToArray(),
+                namedFields.Select(f => f.Value).ToArray()
+            );
+            return cbuilder;
         }
 
         private void FinishAssembly(Assembly a)
@@ -1363,9 +1493,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 return tb;
             else
             {
-                if (t.Assembly.FullName.ToLower().Contains("runtimedebug"))
-                    System.Diagnostics.Debugger.Break();
-
                 if (assemblyMapping.ContainsKey(t.Assembly))
                     throw new Exception("Type needs to be mapped, but isn't available in the mapping");
                 else
