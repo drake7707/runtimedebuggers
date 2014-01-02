@@ -31,13 +31,13 @@
             this.components = new System.ComponentModel.Container();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.pnlContainer = new System.Windows.Forms.Panel();
-            this.tabsCode = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.txtInfo = new RunTimeDebuggers.AssemblyExplorer.HighlightRTB();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.diagram = new RunTimeDebuggers.AssemblyExplorer.ILNodeDiagram();
             this.resourcePane = new RunTimeDebuggers.AssemblyExplorer.Components.ResourcePane();
             this.pnl = new System.Windows.Forms.Panel();
+            this.tabsCode = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.diagram = new RunTimeDebuggers.AssemblyExplorer.ILNodeDiagram();
             this.txtInfoTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutPanel1.SuspendLayout();
             this.pnlContainer.SuspendLayout();
@@ -64,13 +64,48 @@
             // pnlContainer
             // 
             this.pnlContainer.Controls.Add(this.txtInfo);
-            this.pnlContainer.Controls.Add(this.resourcePane);
             this.pnlContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlContainer.Location = new System.Drawing.Point(20, 0);
             this.pnlContainer.Margin = new System.Windows.Forms.Padding(0);
             this.pnlContainer.Name = "pnlContainer";
             this.pnlContainer.Size = new System.Drawing.Size(795, 407);
             this.pnlContainer.TabIndex = 0;
+            // 
+            // txtInfo
+            // 
+            this.txtInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(220)))));
+            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtInfo.DetectUrls = false;
+            this.txtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtInfo.Location = new System.Drawing.Point(0, 0);
+            this.txtInfo.Margin = new System.Windows.Forms.Padding(0);
+            this.txtInfo.Name = "txtInfo";
+            this.txtInfo.Size = new System.Drawing.Size(795, 407);
+            this.txtInfo.TabIndex = 1;
+            this.txtInfo.Text = "";
+            this.txtInfo.WordWrap = false;
+            this.txtInfo.VScroll += new System.EventHandler(this.txtInfo_VScroll);
+            this.txtInfo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.txtInfo_MouseMove);
+            this.txtInfo.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtInfo_MouseUp);
+            // 
+            // resourcePane
+            // 
+            this.resourcePane.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resourcePane.Location = new System.Drawing.Point(0, 0);
+            this.resourcePane.Name = "resourcePane";
+            this.resourcePane.Size = new System.Drawing.Size(829, 439);
+            this.resourcePane.TabIndex = 2;
+            // 
+            // pnl
+            // 
+            this.pnl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnl.Location = new System.Drawing.Point(0, 0);
+            this.pnl.Margin = new System.Windows.Forms.Padding(0);
+            this.pnl.Name = "pnl";
+            this.pnl.Size = new System.Drawing.Size(20, 407);
+            this.pnl.TabIndex = 2;
+            this.pnl.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_Paint);
+            this.pnl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnl_MouseDown);
             // 
             // tabsCode
             // 
@@ -94,23 +129,6 @@
             this.tabPage1.Text = "IL";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // txtInfo
-            // 
-            this.txtInfo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(220)))));
-            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtInfo.DetectUrls = false;
-            this.txtInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtInfo.Location = new System.Drawing.Point(0, 0);
-            this.txtInfo.Margin = new System.Windows.Forms.Padding(0);
-            this.txtInfo.Name = "txtInfo";
-            this.txtInfo.Size = new System.Drawing.Size(795, 407);
-            this.txtInfo.TabIndex = 1;
-            this.txtInfo.Text = "";
-            this.txtInfo.WordWrap = false;
-            this.txtInfo.VScroll += new System.EventHandler(this.txtInfo_VScroll);
-            this.txtInfo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.txtInfo_MouseMove);
-            this.txtInfo.MouseUp += new System.Windows.Forms.MouseEventHandler(this.txtInfo_MouseUp);
-            // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.diagram);
@@ -125,38 +143,24 @@
             // diagram
             // 
             this.diagram.AutoScroll = true;
+            this.diagram.AutoScrollMinSize = new System.Drawing.Size(-2147483648, -2147483648);
             this.diagram.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.diagram.GridSize = new System.Drawing.Size(8, 8);
             this.diagram.LineType = NodeControl.LineTypeEnum.Bezier;
             this.diagram.Location = new System.Drawing.Point(3, 3);
             this.diagram.Name = "diagram";
             this.diagram.NodeSize = new System.Drawing.Size(100, 50);
+            this.diagram.ShowGrid = false;
             this.diagram.Size = new System.Drawing.Size(815, 407);
             this.diagram.TabIndex = 0;
-            // 
-            // resourcePane
-            // 
-            this.resourcePane.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resourcePane.Location = new System.Drawing.Point(0, 0);
-            this.resourcePane.Name = "resourcePane";
-            this.resourcePane.Size = new System.Drawing.Size(795, 407);
-            this.resourcePane.TabIndex = 2;
-            // 
-            // pnl
-            // 
-            this.pnl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnl.Location = new System.Drawing.Point(0, 0);
-            this.pnl.Margin = new System.Windows.Forms.Padding(0);
-            this.pnl.Name = "pnl";
-            this.pnl.Size = new System.Drawing.Size(20, 407);
-            this.pnl.TabIndex = 2;
-            this.pnl.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_Paint);
-            this.pnl.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnl_MouseDown);
+            this.diagram.Zoom = 1F;
             // 
             // CodePane
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tabsCode);
+            this.Controls.Add(this.resourcePane);
             this.Name = "CodePane";
             this.Size = new System.Drawing.Size(829, 439);
             this.tableLayoutPanel1.ResumeLayout(false);

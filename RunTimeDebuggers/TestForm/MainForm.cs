@@ -11,6 +11,7 @@ using System.Diagnostics;
 
 namespace TestForm
 {
+    [TestAttribute("TEST attribute")]
     public partial class MainForm : Form, IFoo
     {
 
@@ -21,7 +22,7 @@ namespace TestForm
             AndAnotherOne
         }
 
-
+        [TestAttribute("TEST attribute on constructor")]
         public MainForm()
         {
             InitializeComponent();
@@ -48,7 +49,7 @@ namespace TestForm
             }
         }
 
-        void DoSomethingWithEnum(TestEnum enm)
+        void DoSomethingWithEnum([Test("Test attribute on parameter")]TestEnum enm)
         {
             Text = ((int)enm).ToString();
         }
@@ -168,7 +169,7 @@ namespace TestForm
             }
         }
 
-     
+
 
         private TestForm.InnerClass TestInner = new TestForm.InnerClass() { Test = 5 };
 
@@ -188,7 +189,7 @@ namespace TestForm
             //MessageBox.Show(str);
         }
 
-    
+
 
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -221,11 +222,12 @@ namespace TestForm
                 MessageBox.Show("I'm doing something right now!");
             }
         }
-        
+
 
         int IFoo.MyFoo
         {
-            get; set;
+            get;
+            set;
         }
     }
 
@@ -370,7 +372,7 @@ namespace TestForm
             while (i < 77)
             {
                 str = "whiling";
-                i++;    
+                i++;
             }
             return str + "afterwhile";
         }
@@ -385,6 +387,31 @@ namespace TestForm
             return "afterfor";
         }
 
+    }
+
+    [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
+    sealed class TestAttribute : Attribute
+    {
+        // See the attribute guidelines at 
+        //  http://go.microsoft.com/fwlink/?LinkId=85236
+        readonly string positionalString;
+
+        // This is a positional argument
+        public TestAttribute(string positionalString)
+        {
+            this.positionalString = positionalString;
+
+            // TODO: Implement code here
+            throw new NotImplementedException();
+        }
+
+        public string PositionalString
+        {
+            get { return positionalString; }
+        }
+
+        // This is a named argument
+        public int NamedInt { get; set; }
     }
 
 }

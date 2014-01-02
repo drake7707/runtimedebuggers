@@ -49,7 +49,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 {
                     Nodes.Add(new NamespaceNode(pair.Value));
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -82,7 +82,10 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public override string Visualization
         {
-            get { return this.Text; }
+            get
+            {
+                return Assembly.GetAssemblyVisualization();
+            }
         }
     }
 }

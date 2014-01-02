@@ -92,7 +92,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public override string Visualization
         {
-            get { return this.Text + Environment.NewLine + GetValueIfStaticAndReadable(); }
+            get { return VisualizerHelper.GetMemberVisualization(Property) + @"\line " + GetValueIfStaticAndReadable(); }
         }
 
         public override MemberInfo Member

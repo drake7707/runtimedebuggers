@@ -331,6 +331,7 @@
             this.mnuRunDebugger.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.mnuRunDebugger.ImageTransparentColor = System.Drawing.Color.White;
             this.mnuRunDebugger.Name = "mnuRunDebugger";
+            this.mnuRunDebugger.Image = global::RunTimeDebuggers.Properties.Resources.debugger;
             this.mnuRunDebugger.Size = new System.Drawing.Size(23, 22);
             this.mnuRunDebugger.Text = "Run interpreter (WIP)";
             this.mnuRunDebugger.Click += new System.EventHandler(this.mnuRunDebugger_Click);
@@ -340,6 +341,7 @@
             this.mnuStepInto.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.mnuStepInto.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.mnuStepInto.Name = "mnuStepInto";
+            this.mnuStepInto.Image = global::RunTimeDebuggers.Properties.Resources.stepInto;
             this.mnuStepInto.Size = new System.Drawing.Size(23, 22);
             this.mnuStepInto.Text = "Step into next statement (WIP)";
             this.mnuStepInto.Click += new System.EventHandler(this.mnuStepInto_Click);
