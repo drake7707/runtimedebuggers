@@ -536,9 +536,14 @@ namespace RunTimeDebuggers.Helpers
         }
 
 
-        private static string GetRTFForValue(object value)
+        private static string GetRTFForValue(object value, Type t)
         {
-            if (value is Type)
+            if (value == null)
+                return "null";
+
+            if (t.IsEnum)
+                return t.FullName  + "." + Enum.GetName(t, value);
+            else if (value is Type)
                 return "typeof(" + ((Type)value).ToSignatureString() + ")";
             else if (value is string)
                 return @"\cf3\" + "\"" + (string)(value) + @"\cf0\" + "\"";
@@ -552,8 +557,8 @@ namespace RunTimeDebuggers.Helpers
             foreach (var cad in cads)
             {
                 List<string> arguments = new List<string>();
-                arguments.AddRange(cad.ConstructorArguments.Select(arg => GetRTFForValue(arg.Value)));
-                arguments.AddRange(cad.NamedArguments.Select(arg => arg.MemberInfo.Name + "=" + GetRTFForValue(arg.TypedValue.Value)));
+                arguments.AddRange(cad.ConstructorArguments.Select(arg => GetRTFForValue(arg.Value,arg.ArgumentType)));
+                arguments.AddRange(cad.NamedArguments.Select(arg => arg.MemberInfo.Name + "=" + GetRTFForValue(arg.TypedValue.Value, arg.TypedValue.ArgumentType)));
 
                 string typeName = cad.Constructor.DeclaringType.ToSignatureString();
                 str.Append("[" + @"\b " + typeName + @"\b0" + "(" + string.Join(", ", arguments.ToArray()) + ")]" + @"\line ");
@@ -564,7 +569,7 @@ namespace RunTimeDebuggers.Helpers
 
         public static string GetAssemblyVisualization(this Assembly a)
         {
-            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(a));
+            string attrs = GetAttributesRTF(a.GetCustomAttributesDataInclSecurity());
             string text = AliasManager.Instance.GetFullNameWithAlias(a, a.GetName().Name);
 
             return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
@@ -572,7 +577,7 @@ namespace RunTimeDebuggers.Helpers
 
         public static string GetMemberVisualization(this MemberInfo m)
         {
-            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m));
+            string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
             string text = m.ToSignatureString();
 
             return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
@@ -580,7 +585,7 @@ namespace RunTimeDebuggers.Helpers
 
         public static string GetTypeVisualization(this Type m)
         {
-            string attrs = GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m));
+            string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
             string text = m.ToSignatureString(true);
 
             return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);

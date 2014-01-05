@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Reflection;
-
 namespace Injector
 {
     public partial class Form1 : Form
@@ -17,6 +16,9 @@ namespace Injector
             InitializeComponent();
             grid.AutoGenerateColumns = false;
 
+
+            
+            
         }
 
 
@@ -195,6 +197,7 @@ namespace Injector
             TestForm.MainForm frm = new TestForm.MainForm();
             frm.Show();
 
+            //RunTimeDebuggers.Program.InjectedMain();
             // invoke injector on own process
             string runtimeDebuggerDll = GetRuntimeDebuggerAssemblyLocation(IntPtr.Size == 8 ? true : false, Environment.Version.Major == 4 ? CLRVersion.v4_0 : CLRVersion.v2_0);
             Assembly ass = Assembly.LoadFile(runtimeDebuggerDll);
