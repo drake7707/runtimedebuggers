@@ -203,6 +203,54 @@
     <Compile Include="Console Debugger\ConsoleWriter.cs" />
     <Compile Include="Console Debugger\DebugWriter.cs" />
     <Compile Include="Console Debugger\TraceWriter.cs" />
+    <Compile Include="Controls\CodeTextBox.cs" />
+    <Compile Include="Controls\FastColoredTextBox\AutocompleteItem.cs" />
+    <Compile Include="Controls\FastColoredTextBox\AutocompleteMenu.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Bookmarks.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Char.cs" />
+    <Compile Include="Controls\FastColoredTextBox\CommandManager.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Commands.cs" />
+    <Compile Include="Controls\FastColoredTextBox\DocumentMap.cs" />
+    <Compile Include="Controls\FastColoredTextBox\ExportToHTML.cs" />
+    <Compile Include="Controls\FastColoredTextBox\ExportToRTF.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FastColoredTextBox.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FileTextSource.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FindForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FindForm.Designer.cs">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FastColoredTextBox\GoToForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\GoToForm.Designer.cs">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FastColoredTextBox\Hints.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Hotkeys.cs" />
+    <Compile Include="Controls\FastColoredTextBox\HotkeysEditorForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\HotkeysEditorForm.Designer.cs">
+      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FastColoredTextBox\LimitedStack.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Line.cs" />
+    <Compile Include="Controls\FastColoredTextBox\LinesAccessor.cs" />
+    <Compile Include="Controls\FastColoredTextBox\MacrosManager.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Place.cs" />
+    <Compile Include="Controls\FastColoredTextBox\PlatformType.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Range.cs" />
+    <Compile Include="Controls\FastColoredTextBox\ReplaceForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\ReplaceForm.Designer.cs">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FastColoredTextBox\Ruler.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Ruler.Designer.cs">
+      <DependentUpon>Ruler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FastColoredTextBox\Style.cs" />
+    <Compile Include="Controls\FastColoredTextBox\SyntaxDescriptor.cs" />
+    <Compile Include="Controls\FastColoredTextBox\SyntaxHighlighter.cs" />
+    <Compile Include="Controls\FastColoredTextBox\TextSource.cs" />
+    <Compile Include="Controls\FastColoredTextBox\TypeDescriptor.cs" />
+    <Compile Include="Controls\FastColoredTextBox\UnfocusablePanel.cs" />
+    <Compile Include="Controls\FastColoredTextBox\VisualMarker.cs" />
     <Compile Include="Controls\GraphExplorer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -321,6 +369,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Console Debugger\ConsoleWindow.resx">
       <DependentUpon>ConsoleWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FastColoredTextBox\FastColoredTextBox.resx">
+      <DependentUpon>FastColoredTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FastColoredTextBox\FindForm.resx">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FastColoredTextBox\GoToForm.resx">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FastColoredTextBox\HotkeysEditorForm.resx">
+      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\FastColoredTextBox\ReplaceForm.resx">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using RunTimeDebuggers.Helpers;
 
 namespace RunTimeDebuggers.AssemblyExplorer
 {
@@ -35,7 +36,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public abstract void Populate(string filterstring);
 
-        public abstract string Visualization
+        public abstract List<VisualizerHelper.CodeBlock> Visualization
         {
             get;
         }

@@ -86,7 +86,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
             get
             {
@@ -94,11 +94,16 @@ namespace RunTimeDebuggers.AssemblyExplorer
             }
         }
 
-        
 
 
-        public static string GetVisualisation(AbstractAssemblyNode node, MethodBase m)
+
+        public static List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> GetVisualisation(AbstractAssemblyNode node, MethodBase m)
         {
+            var blocks = new List<VisualizerHelper.CodeBlock>();
+
+            blocks.AddRange(VisualizerHelper.GetAttributesCodeBlocks(m.GetCustomAttributesDataInclSecurity()));
+            blocks.Add(new VisualizerHelper.CodeBlock(Environment.NewLine));
+
             string il;
             try
             {
@@ -106,13 +111,17 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 disAss.BuildInstructions();
                 //MethodBodyReader reader = new MethodBodyReader(m);
                 il = disAss.ToRTFCode();
+                blocks.AddRange(disAss.GetCodeBlocks());
             }
             catch (Exception ex)
             {
                 il = "Error reading IL: " + ex.GetType().FullName + " - " + ex.Message;
+
+                blocks.Add(new VisualizerHelper.CodeBlock("Error reading IL: " + ex.GetType().FullName + " - " + ex.Message + Environment.NewLine));
             }
 
-            return VisualizerHelper.RTFHeader.Replace("@BODY@", VisualizerHelper.GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m)) + @"\line " + node.Text + @"\line " + il);
+            return blocks;
+            //return VisualizerHelper.RTFHeader.Replace("@BODY@", VisualizerHelper.GetAttributesRTF(CustomAttributeData.GetCustomAttributes(m)) + @"\line " + node.Text + @"\line " + il);
         }
 
 

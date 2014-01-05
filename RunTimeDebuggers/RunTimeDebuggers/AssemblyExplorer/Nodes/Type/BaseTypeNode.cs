@@ -63,9 +63,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return type.ToSignatureString(); }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>() {
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(type.ToSignatureString())
+                 };
+            }
         }
 
     }

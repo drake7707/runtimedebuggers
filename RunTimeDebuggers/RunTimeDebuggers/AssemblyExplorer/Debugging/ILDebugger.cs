@@ -430,43 +430,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 else
                 {
                     Type targetType = (Type)instruction.Operand;
-                    stack.Push(new StackEntry() { ByRef = false, Value = Cast(targetType, entry.Value), Type = targetType });
+                    stack.Push(new StackEntry() { ByRef = false, Value = entry.Value != null ? entry.Value.CastTo(targetType) : null, Type = targetType });
                 }
                 return true;
             }
             return false;
         }
 
-        /// <summary>
-        /// Casts the given object to the given type
-        /// </summary>
-        /// <param name="t">The type to cast the object to</param>
-        /// <param name="o">The object to be casted</param>
-        /// <returns>The casted object</returns>
-        public object Cast(Type t, object o)
-        {
-            try
-            {
-                return this.GetType().GetMethod("CastGeneric", BindingFlags.Instance | BindingFlags.NonPublic)
-                                         .MakeGenericMethod(t).Invoke(this, new object[] { o });
-            }
-            catch (Exception ex)
-            {
-                // throw actual exception
-                throw ex.InnerException;
-            }
-        }
-
-        /// <summary>
-        /// Casts the given object to the given type
-        /// </summary>
-        /// <typeparam name="T">The type to cast the object to</typeparam>
-        /// <param name="o">The object to be casted</param>
-        /// <returns>The casted object</returns>
-        private T CastGeneric<T>(object o)
-        {
-            return (T)o;
-        }
+       
 
         private bool DoNewArr(ILInstruction instruction)
         {

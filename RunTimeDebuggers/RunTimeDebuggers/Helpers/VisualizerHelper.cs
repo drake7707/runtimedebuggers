@@ -6,15 +6,389 @@ using System.Text;
 using System.Reflection;
 using System.Reflection.Emit;
 using RunTimeDebuggers.AssemblyExplorer;
+using FastColoredTextBoxNS;
 
 namespace RunTimeDebuggers.Helpers
 {
 
     public static class VisualizerHelper
     {
+
+        public class CodeBlock : IComparable<CodeBlock>
+        {
+            public CodeBlock()
+            {
+                Clickable = false;
+            }
+
+            public CodeBlock(string text)
+                : this()
+            {
+                this.Text = text;
+            }
+
+            public CodeBlock(int indenting, string text)
+            {
+                this.Text = new string(' ', indenting) + text;
+            }
+
+            public virtual string Text { get; set; }
+
+            public virtual object Tag { get; set; }
+
+            public virtual Place Start { get; set; }
+            public virtual Place End { get; set; }
+
+            public int CompareTo(CodeBlock other)
+            {
+                if (Start <= other.Start && End > other.End) return 0;
+                if (Start <= other.Start) return -1;
+                return 1;
+            }
+
+            public bool Clickable { get; set; }
+        }
+
+        public class TypeCodeBlock : CodeBlock
+        {
+            public TypeCodeBlock(Type t)
+            {
+                this.Text = t.ToSignatureString();
+                this.Tag = t;
+                Clickable = true;
+            }
+        }
+
+        public class MemberCodeBlock : CodeBlock
+        {
+            public MemberCodeBlock(MemberInfo t)
+            {
+                this.Text = t.ToSignatureString();
+                this.Tag = t;
+                this.Clickable = true;
+            }
+        }
+
+        
+        public class ValueCodeBlock : CodeBlock
+        {
+            public ValueCodeBlock(object value)
+            {
+                if (value == null)
+                    this.Text = "null";
+                else if (value.GetType().IsEnum)
+                    this.Text = value.GetType().ToSignatureString() + "." + value;
+                if (value is string)
+                    this.Text = "\"" + value + "\"";
+                else
+                    this.Text = value + "";
+                this.Tag = value;
+            }
+        }
+
+        public class InstructionOffsetCodeBlock : CodeBlock
+        {
+            public bool IsTarget { get; set; }
+            public InstructionOffsetCodeBlock(int offset, bool isTarget)
+            {
+                this.IsTarget = isTarget;
+                this.Text = offset.ToString("x4");
+                this.Tag = offset;
+
+                if(isTarget)
+                    this.Clickable = true;
+            }
+        }
+
+        public class InstructionOpCodeCodeBlock : CodeBlock
+        {
+            public InstructionOpCodeCodeBlock(ILInstruction instruction)
+            {
+                string opcode = instruction.Code.ToString();
+                if (opcode.Length < 10)
+                    opcode = opcode + new string(' ', 10 - opcode.Length);
+
+                this.Text = opcode;
+                this.Tag = instruction;
+            }
+        }
+
+        public class ParameterInfoCodeBlock : CodeBlock
+        {
+            public ParameterInfoCodeBlock(ParameterInfo p)
+            {
+                if (p == null)
+                    this.Text = "(this)";
+                else
+                    this.Text = "(" + p.Name + ")";
+
+                this.Tag = p;
+            }
+        }
+
+        public class ErrorCodeBlock : CodeBlock
+        {
+            public ErrorCodeBlock(Disassembler.Error err)
+            {
+                this.Text = "Error reading instruction at " + err.ErrorPosition.ToString("x4") + ":  " + err.Exception.ToExceptionString();
+                this.Tag = err;
+            }
+        }
+
+
+
         private static Dictionary<OpCode, string> opcodeDescriptions;
 
         public static string RTFHeader = @"{\rtf1\ansi\ansicpg1252\deff0\deflang2067{\fonttbl{\f0\fnil\fcharset0 Tahoma;}}{\colortbl ;\red0\green77\blue187;\red0\green0\blue255;\red163\green21\blue21;\red255\green0\blue0;}\viewkind4\uc1\pard\f0\fs17@BODY@\par}";
+
+
+
+
+        public static List<CodeBlock> GetCodeBlocks(this Disassembler reader)
+        {
+            List<CodeBlock> blocks = new List<CodeBlock>();
+            if (reader.Instructions == null)
+                return blocks;
+
+            var locals = reader.Method.GetMethodBody().LocalVariables;
+
+            if (locals.Count > 0)
+            {
+                blocks.Add(new CodeBlock(".locals {" + Environment.NewLine));
+                foreach (var local in locals)
+                {
+                    blocks.Add(new CodeBlock("    [" + local.LocalIndex + "] "));
+                    blocks.Add(new TypeCodeBlock(local.LocalType));
+                    blocks.Add(new CodeBlock(Environment.NewLine));
+                }
+                blocks.Add(new CodeBlock("}" + Environment.NewLine));
+            }
+
+            var exceptionClauses = reader.Method.GetMethodBody().ExceptionHandlingClauses;
+
+            var allTries = exceptionClauses.GroupBy(ex => ex.TryOffset + "_" + ex.TryLength)
+                                                 .ToDictionary(g => g.Key, g => g.Last());
+
+            // sort by trylength descending to define the outer try first!
+            var tryClausesByOffset = allTries.Values.GroupBy(t => t.TryOffset)
+                                                .ToDictionary(g => g.Key, g => g.OrderByDescending(ex => ex.TryLength).ToList());
+
+            var tryClausesByEndOffset = tryClausesByOffset.Values.SelectMany(ex => ex)
+                                                                 .GroupBy(ex => ex.TryOffset + ex.TryLength)
+                                                                 .ToDictionary(g => g.Key, g => g.OrderByDescending(ex => ex.TryOffset).ToList());
+
+            var catchClausesByOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Clause)
+                                                     .ToDictionary(ex => ex.HandlerOffset, ex => ex);
+
+            var catchClausesByEndOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Clause)
+                                                     .ToDictionary(ex => ex.HandlerOffset + ex.HandlerLength, ex => ex);
+
+            var faultClausesByOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Fault)
+                                         .ToDictionary(ex => ex.HandlerOffset, ex => ex);
+
+            var faultClausesByEndOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Fault)
+                                         .ToDictionary(ex => ex.HandlerOffset + ex.HandlerLength, ex => ex);
+
+
+            var finallyClausesByOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Finally)
+                                                     .ToDictionary(ex => ex.HandlerOffset, ex => ex);
+
+            var finallyClausesByEndOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Finally)
+                                                    .ToDictionary(ex => ex.HandlerOffset + ex.HandlerLength, ex => ex);
+
+
+            var filterClausesByFilterOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Filter)
+                                                  .ToDictionary(ex => ex.FilterOffset, ex => ex);
+
+            var filterClausesByHandlerOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Filter)
+                                                  .ToDictionary(ex => ex.HandlerOffset, ex => ex);
+
+            var filterClausesByEndHandlerOffset = exceptionClauses.Where(ex => ex.Flags == ExceptionHandlingClauseOptions.Filter)
+                                                  .ToDictionary(ex => ex.HandlerOffset + ex.HandlerLength, ex => ex);
+
+
+            int indenting = 0;
+            foreach (var instruction in reader.Instructions)
+            {
+                List<ExceptionHandlingClause> exClauses;
+
+                if (tryClausesByEndOffset.TryGetValue(instruction.Offset, out exClauses))
+                {
+                    for (int i = 0; i < exClauses.Count; i++)
+                    {
+                        indenting--;
+                        blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                    }
+                }
+
+                ExceptionHandlingClause ex;
+                if (catchClausesByEndOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    indenting--;
+                    blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                }
+
+                if (faultClausesByEndOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    indenting--;
+                    blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                }
+
+                if (finallyClausesByEndOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    indenting--;
+                    blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                }
+
+                if (filterClausesByEndHandlerOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    indenting--;
+                    blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                }
+
+
+                if (tryClausesByOffset.TryGetValue(instruction.Offset, out exClauses))
+                {
+                    for (int i = 0; i < exClauses.Count; i++)
+                    {
+                        blocks.Add(new CodeBlock(indenting, ".try" + Environment.NewLine));
+                        blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                        indenting++;
+                    }
+                }
+
+                if (catchClausesByOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    blocks.Add(new CodeBlock(indenting, "catch("));
+                    blocks.Add(new TypeCodeBlock(ex.CatchType));
+                    blocks.Add(new CodeBlock(")" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                    indenting++;
+                }
+
+                if (faultClausesByOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    blocks.Add(new CodeBlock(indenting, "fault" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                    indenting++;
+                }
+
+                if (finallyClausesByOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    blocks.Add(new CodeBlock(indenting, "finally" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                    indenting++;
+                }
+
+                if (filterClausesByHandlerOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    indenting--;
+                    blocks.Add(new CodeBlock(indenting, "}" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "catch" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                    indenting++;
+                }
+
+
+                if (filterClausesByFilterOffset.TryGetValue(instruction.Offset, out ex))
+                {
+                    blocks.Add(new CodeBlock(indenting, "filter" + Environment.NewLine));
+                    blocks.Add(new CodeBlock(indenting, "{" + Environment.NewLine));
+                    indenting++;
+                }
+
+
+                string opcode = instruction.Code.ToString();
+                if (opcode.Length < 10)
+                    opcode = opcode + new string(' ', 10 - opcode.Length);
+
+
+                blocks.Add(new CodeBlock(indenting, ""));
+                blocks.Add(new InstructionOffsetCodeBlock(instruction.Offset, false));
+                blocks.Add(new CodeBlock(" "));
+                blocks.Add(new InstructionOpCodeCodeBlock(instruction));
+                blocks.Add(new CodeBlock("\t"));
+
+                if (instruction.Code.FlowControl == FlowControl.Branch || instruction.Code.FlowControl == FlowControl.Cond_Branch)
+                    if (instruction.Operand is Int32[])
+                    {
+                        var targetOffsets = ((Int32[])(instruction.Operand));
+                        for (int i = 0; i < targetOffsets.Length; i++)
+                        {
+                            blocks.Add(new InstructionOffsetCodeBlock(targetOffsets[i], true));
+                            if (i != targetOffsets.Length - 1)
+                                blocks.Add(new CodeBlock(", "));
+                        }
+                    }
+                    else
+                    {
+                        blocks.Add(new InstructionOffsetCodeBlock(Convert.ToInt32(instruction.Operand), true));
+                    }
+                else if (instruction.Operand is Type)
+                {
+                    blocks.Add(new TypeCodeBlock((Type)instruction.Operand));
+                }
+                else if (instruction.Operand is MemberInfo)
+                {
+                    blocks.Add(new TypeCodeBlock(((MemberInfo)instruction.Operand).DeclaringType));
+                    blocks.Add(new CodeBlock("::"));
+                    blocks.Add(new MemberCodeBlock((MemberInfo)instruction.Operand));
+                }
+                else if (instruction.Operand is string)
+                {
+                    blocks.Add(new ValueCodeBlock((string)instruction.Operand));
+                }
+                else if (instruction.Operand is Int32)
+                {
+                    blocks.Add(new ValueCodeBlock(instruction.Operand));
+                }
+
+
+                int paramIdx = -1;
+                if (instruction.Code == OpCodes.Ldarg || instruction.Code == OpCodes.Ldarg_S ||
+                    instruction.Code == OpCodes.Starg || instruction.Code == OpCodes.Starg_S)
+                    paramIdx = Convert.ToInt32(instruction.Operand);
+                else if (instruction.Code == OpCodes.Ldarg_0)
+                    paramIdx = 0;
+                else if (instruction.Code == OpCodes.Ldarg_1)
+                    paramIdx = 1;
+                else if (instruction.Code == OpCodes.Ldarg_2)
+                    paramIdx = 2;
+                else if (instruction.Code == OpCodes.Ldarg_3)
+                    paramIdx = 3;
+                else
+                    paramIdx = -1;
+
+                if (paramIdx >= 0)
+                {
+                    var parameterInfos = reader.Method.GetParameters();
+                    if (reader.Method.IsStatic)
+                        blocks.Add(new ParameterInfoCodeBlock(parameterInfos[paramIdx]));
+                    else
+                    {
+                        if (paramIdx == 0)
+                            blocks.Add(new ParameterInfoCodeBlock(null));
+                        else
+                            blocks.Add(new ParameterInfoCodeBlock(parameterInfos[paramIdx - 1]));
+                    }
+                }
+
+                blocks.Add(new CodeBlock(Environment.NewLine));
+            }
+
+            foreach (var error in reader.Errors)
+            {
+                blocks.Add(new ErrorCodeBlock(error));
+                blocks.Add(new CodeBlock(Environment.NewLine));
+
+            }
+            //CSharpILParser parser = new CSharpILParser(reader.Method, reader.Instructions);
+            //string csharp = parser.Parse();
+            //str.AppendLine(GetRtfUnicodeEscapedString(Environment.NewLine + Environment.NewLine + EscapeRTF(csharp).Replace(Environment.NewLine, @"\line ")));
+
+            return blocks;
+        }
+
 
 
         public static string ToRTFCode(this Disassembler reader)
@@ -25,7 +399,7 @@ namespace RunTimeDebuggers.Helpers
             StringBuilder str = new StringBuilder();
 
             var locals = reader.Method.GetMethodBody().LocalVariables;
-            
+
             if (locals.Count > 0)
             {
                 str.Append(@".locals \{" + @"\line ");
@@ -177,9 +551,9 @@ namespace RunTimeDebuggers.Helpers
 
 
                 string opcode = instruction.Code.ToString();
-                if(opcode.Length < 10)
-                    opcode = opcode + new string(' ', 10 - opcode.Length) ;
-                
+                if (opcode.Length < 10)
+                    opcode = opcode + new string(' ', 10 - opcode.Length);
+
                 string line = instruction.Offset.ToString("x4") + @" \b " + opcode + @"\b0 ";
                 line += " \t";
                 if (instruction.Code.FlowControl == FlowControl.Branch || instruction.Code.FlowControl == FlowControl.Cond_Branch)
@@ -214,7 +588,7 @@ namespace RunTimeDebuggers.Helpers
                     line += @"\cf3\" + "\"" + (instruction.Operand + "") + @"\cf0\" + "\"";
                 }
 
-                
+
                 int paramIdx = -1;
                 if (instruction.Code == OpCodes.Ldarg || instruction.Code == OpCodes.Ldarg_S ||
                     instruction.Code == OpCodes.Starg || instruction.Code == OpCodes.Starg_S)
@@ -244,7 +618,7 @@ namespace RunTimeDebuggers.Helpers
                     }
                 }
 
-                
+
                 str.AppendLine(indenting, line);
             }
 
@@ -263,7 +637,6 @@ namespace RunTimeDebuggers.Helpers
         {
             str.Append(new string(' ', indenting * 4) + s + @"\line ");
         }
-
 
 
         //"http://" + Uri.EscapeUriString(((MemberInfo)instruction.Operand).Module.FullyQualifiedName) + "#" + ((MemberInfo)instruction.Operand).MetadataToken
@@ -542,7 +915,7 @@ namespace RunTimeDebuggers.Helpers
                 return "null";
 
             if (t.IsEnum)
-                return t.FullName  + "." + Enum.GetName(t, value);
+                return t.FullName + "." + Enum.GetName(t, value);
             else if (value is Type)
                 return "typeof(" + ((Type)value).ToSignatureString() + ")";
             else if (value is string)
@@ -557,7 +930,7 @@ namespace RunTimeDebuggers.Helpers
             foreach (var cad in cads)
             {
                 List<string> arguments = new List<string>();
-                arguments.AddRange(cad.ConstructorArguments.Select(arg => GetRTFForValue(arg.Value,arg.ArgumentType)));
+                arguments.AddRange(cad.ConstructorArguments.Select(arg => GetRTFForValue(arg.Value, arg.ArgumentType)));
                 arguments.AddRange(cad.NamedArguments.Select(arg => arg.MemberInfo.Name + "=" + GetRTFForValue(arg.TypedValue.Value, arg.TypedValue.ArgumentType)));
 
                 string typeName = cad.Constructor.DeclaringType.ToSignatureString();
@@ -567,28 +940,102 @@ namespace RunTimeDebuggers.Helpers
             return str.ToString();
         }
 
-        public static string GetAssemblyVisualization(this Assembly a)
+        public static List<CodeBlock> GetAttributesCodeBlocks(IList<CustomAttributeData> cads)
         {
-            string attrs = GetAttributesRTF(a.GetCustomAttributesDataInclSecurity());
-            string text = AliasManager.Instance.GetFullNameWithAlias(a, a.GetName().Name);
+            var blocks = new List<CodeBlock>();
 
-            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+            foreach (var cad in cads)
+            {
+                blocks.Add(new CodeBlock("["));
+                blocks.Add(new TypeCodeBlock(cad.Constructor.DeclaringType));
+                blocks.Add(new CodeBlock("("));
+
+                for (int i = 0; i < cad.ConstructorArguments.Count; i++)
+                {
+                    var val = cad.ConstructorArguments[i].Value;
+                    if (val != null)
+                        val = val.CastTo(cad.ConstructorArguments[i].ArgumentType);
+                    blocks.Add(new ValueCodeBlock(val));
+
+                    if (i != cad.ConstructorArguments.Count - 1)
+                        blocks.Add(new CodeBlock(", "));
+                }
+
+                if(cad.ConstructorArguments.Count > 0 && cad.NamedArguments.Count > 0)
+                    blocks.Add(new CodeBlock(", "));
+
+                for (int i = 0; i < cad.NamedArguments.Count; i++)
+                {
+                    var val = cad.NamedArguments[i].TypedValue.Value;
+                    if (val != null)
+                        val = val.CastTo(cad.NamedArguments[i].TypedValue.ArgumentType);
+
+                    blocks.Add(new CodeBlock(cad.NamedArguments[i].MemberInfo.Name + " = "));
+                    blocks.Add(new ValueCodeBlock(val));
+
+                    if (i != cad.NamedArguments.Count - 1)
+                        blocks.Add(new CodeBlock(", "));
+                }
+                blocks.Add(new CodeBlock(")]" + Environment.NewLine));
+            }
+
+            return blocks;
+
         }
 
-        public static string GetMemberVisualization(this MemberInfo m)
+        public static List<CodeBlock> GetAssemblyVisualization(this Assembly a)
         {
-            string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
-            string text = m.ToSignatureString();
+            var blocks = new List<CodeBlock>();
+            blocks.AddRange(GetAttributesCodeBlocks(a.GetCustomAttributesDataInclSecurity()));
 
-            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+            blocks.Add(new CodeBlock(Environment.NewLine));
+            blocks.Add(new CodeBlock(AliasManager.Instance.GetFullNameWithAlias(a, a.GetName().Name)));
+            return blocks;
         }
 
-        public static string GetTypeVisualization(this Type m)
+        public static List<CodeBlock> GetMemberVisualization(this MemberInfo m)
         {
-            string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
-            string text = m.ToSignatureString(true);
+            var blocks = new List<CodeBlock>();
+            blocks.AddRange(GetAttributesCodeBlocks(m.GetCustomAttributesDataInclSecurity()));
 
-            return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+            blocks.Add(new CodeBlock(Environment.NewLine));
+            blocks.Add(new CodeBlock(m.ToSignatureString()));
+            return blocks;
         }
+
+        public static List<CodeBlock> GetTypeVisualization(this Type m)
+        {
+            var blocks = new List<CodeBlock>();
+            blocks.AddRange(GetAttributesCodeBlocks(m.GetCustomAttributesDataInclSecurity()));
+
+            blocks.Add(new CodeBlock(Environment.NewLine));
+            blocks.Add(new CodeBlock(m.ToSignatureString()));
+            return blocks;
+        }
+
+
+        //public static string GetAssemblyVisualization(this Assembly a)
+        //{
+        //    string attrs = GetAttributesRTF(a.GetCustomAttributesDataInclSecurity());
+        //    string text = AliasManager.Instance.GetFullNameWithAlias(a, a.GetName().Name);
+
+        //    return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        //}
+
+        //public static string GetMemberVisualization(this MemberInfo m)
+        //{
+        //    string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
+        //    string text = m.ToSignatureString();
+
+        //    return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        //}
+
+        //public static string GetTypeVisualization(this Type m)
+        //{
+        //    string attrs = GetAttributesRTF(m.GetCustomAttributesDataInclSecurity());
+        //    string text = m.ToSignatureString(true);
+
+        //    return VisualizerHelper.RTFHeader.Replace("@BODY@", attrs + @"\line " + text);
+        //}
     }
 }

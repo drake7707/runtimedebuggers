@@ -66,9 +66,15 @@ namespace RunTimeDebuggers.AssemblyExplorer
             this.StatusText = Namespace;
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return this.Text; }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>()
+                {
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(Text)
+                };
+            }
         }
     }
 }

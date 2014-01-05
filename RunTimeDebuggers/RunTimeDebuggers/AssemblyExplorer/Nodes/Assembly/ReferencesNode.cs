@@ -50,11 +50,13 @@ namespace RunTimeDebuggers.AssemblyExplorer
             this.Text = "References";
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return ""; }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>();
+            }
         }
-
     
 
     }

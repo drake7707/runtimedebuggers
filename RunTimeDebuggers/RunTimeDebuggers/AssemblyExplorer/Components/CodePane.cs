@@ -29,113 +29,8 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private System.Reflection.Emit.OpCode opCodeShown;
 
-        private void txtInfo_MouseMove(object sender, MouseEventArgs e)
-        {
-            DetermineInstructionAndExecuteAction(new Point(e.X, e.Y), (partIndex, instruction) =>
-            {
-                if (partIndex == 0)
-                {
-                    // offset
-                    txtInfo.Cursor = Cursors.Arrow;
-                    txtInfoTooltip.RemoveAll();
-                }
-                else if (partIndex == 1)
-                {
-                    // opcode
-                    if (instruction.Code != opCodeShown)
-                    {
-                        browser.SetStatusText(instruction.Code.ToString() + " - " + instruction.Code.ToDescription());
-                        //txtInfoTooltip.RemoveAll();
-                        //var screenpoint = txtInfo.PointToScreen(new Point(e.X, e.Y));
-                        //txtInfoTooltip.Show(instruction.Code.ToDescription(), this.TopLevelControl, screenpoint.X - this.TopLevelControl.Left, screenpoint.Y - this.TopLevelControl.Top);
-                        txtInfo.Cursor = Cursors.Arrow;
-                        opCodeShown = instruction.Code;
-                    }
-                }
-                else if (partIndex == 2)
-                {
-                    // operand
-                    if (instruction.Operand is MemberInfo || instruction.Operand is Type)
-                    {
-                        if (txtInfo.Cursor != Cursors.Hand)
-                            txtInfo.Cursor = Cursors.Hand;
-                    }
-                    else if (instruction.Code.FlowControl == System.Reflection.Emit.FlowControl.Branch ||
-                           instruction.Code.FlowControl == System.Reflection.Emit.FlowControl.Cond_Branch)
-                    {
-                        if (instruction.Operand is Int32[])
-                        {
-                        }
-                        else
-                        {
-                            if (txtInfo.Cursor != Cursors.Hand)
-                                txtInfo.Cursor = Cursors.Hand;
-                        }
-                    }
-                    else
-                        txtInfo.Cursor = Cursors.Arrow;
-
-                    txtInfoTooltip.RemoveAll();
-                }
-                else
-                {
-                    txtInfo.Cursor = Cursors.Arrow;
-                    txtInfoTooltip.RemoveAll();
-                }
-            });
-        }
-
-        private void DetermineInstructionAndExecuteAction(Point pos, Action<int, ILInstruction> action)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(txtInfo.Text))
-                    return;
-
-                int charIdx = txtInfo.GetCharIndexFromPosition(pos);
-                int lineIdx = txtInfo.GetLineFromCharIndex(charIdx);
 
 
-                var charpos = txtInfo.GetPositionFromCharIndex(charIdx);
-                if (Math.Abs(charpos.X - pos.X) > 16 || Math.Abs(charpos.Y - pos.Y) > 16)
-                {
-                    action(-1, default(ILInstruction));
-                    return;
-                }
-
-                string line = txtInfo.Lines[lineIdx];
-
-                // space, the spaces in method signature are replaced with nbsp
-                int partIndex = line.Substring(0, charIdx - txtInfo.GetFirstCharIndexFromLine(lineIdx)).Count(c => c == ' ');
-
-                int offset;
-                if (TryGetILOffset(line, out offset))
-                {
-                    var mbody = GetCurrentSelectedMethod();
-                    if (mbody != null)
-                    {
-
-                        List<ILInstruction> instructions = mbody.GetILInstructions();
-                        var instruction = instructions.Where(i => i.Offset == offset).FirstOrDefault();
-                        if (instruction != default(ILInstruction))
-                        {
-                            action(partIndex, instruction);
-                        }
-
-                    }
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-        }
-
-        private static bool TryGetILOffset(string line, out int offset)
-        {
-            offset = -1;
-            return line.Trim().Length >= 4 && int.TryParse(line.Trim().Substring(0, 4), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out offset);
-        }
 
         private AbstractAssemblyNode node;
 
@@ -146,7 +41,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             {
                 node = value;
                 UpdateVisualization(node);
-                pnl.Invalidate();
+                txtNewInfo.Invalidate();
                 ResetJumpedToOffset();
             }
         }
@@ -156,13 +51,13 @@ namespace RunTimeDebuggers.AssemblyExplorer
             jumpedToOffset = -1; // reset offset if there was one
         }
 
-
-
         private void UpdateVisualization(AbstractAssemblyNode n)
         {
 
             if (n == null)
-                txtInfo.Clear();
+            {
+                txtNewInfo.Clear();
+            }
             else
             {
                 if (n is ResourceNode)
@@ -172,18 +67,12 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     resourcePane.SetResource(resourceName, resourceBytes);
                     resourcePane.Visible = true;
                     tabsCode.Visible = false;
-                    txtInfo.Clear();
+
+                    txtNewInfo.Clear();
                 }
                 else
                 {
-                    try
-                    {
-                        txtInfo.Rtf = n.Visualization;
-                    }
-                    catch (Exception)
-                    {
-                        txtInfo.Text = n.Visualization;
-                    }
+                    txtNewInfo.SetCodeBlocks(n.Visualization);
 
                     try
                     {
@@ -194,15 +83,13 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     }
                     catch (Exception)
                     {
-
-
                     }
 
 
                     tabsCode.Visible = true;
                     resourcePane.Visible = false;
                 }
-                UpdateILOffsets();
+                //UpdateILOffsets();
             }
         }
 
@@ -218,58 +105,38 @@ namespace RunTimeDebuggers.AssemblyExplorer
             return null;
         }
 
-        private void txtInfo_MouseUp(object sender, MouseEventArgs e)
+        private void txtNewInfo_MouseUp(object sender, MouseEventArgs e)
         {
-            DetermineInstructionAndExecuteAction(new Point(e.X, e.Y), (partIndex, instruction) =>
+            var block = txtNewInfo.CodeBlockAtMouse();
+            if (block != null)
             {
-                if (partIndex == 0)
+                if (e.Button == System.Windows.Forms.MouseButtons.Left)
                 {
-                    // offset
-                    txtInfo.Cursor = Cursors.Arrow;
-                }
-                else if (partIndex == 1)
-                {
-                    // opcode
-                }
-                else if (partIndex == 2)
-                {
-                    if (e.Button == System.Windows.Forms.MouseButtons.Left)
+                    if (block is VisualizerHelper.TypeCodeBlock)
                     {
-                        // operand
-                        if (instruction.Operand is Type)
-                        {
-                            browser.SelectType((Type)instruction.Operand);
-                        }
-                        else if (instruction.Operand is MemberInfo)
-                        {
-                            browser.SelectMember((MemberInfo)instruction.Operand);
-                        }
-                        else if (instruction.Code.FlowControl == System.Reflection.Emit.FlowControl.Branch ||
-                                 instruction.Code.FlowControl == System.Reflection.Emit.FlowControl.Cond_Branch)
-                        {
-                            if (instruction.Operand is Int32[])
-                            {
-                            }
-                            else
-                            {
-                                int offset = Convert.ToInt32(instruction.Operand);
-                                ScrollToInstruction(offset);
-                            }
-                        }
+                        browser.SelectType((Type)block.Tag);
                     }
-                    else if (e.Button == System.Windows.Forms.MouseButtons.Right)
+                    else if (block is VisualizerHelper.MemberCodeBlock)
                     {
-                        // operand
-                        if (instruction.Operand is Type || instruction.Operand is MemberInfo)
-                        {
-                            mnuMember.Tag = instruction.Operand;
-                            mnuMember.Show(Cursor.Position);
-                            mnuMember.UpdateAnalyzeTypeMenuEnabledStatus(false);
-                        }
+                        browser.SelectMember((MemberInfo)block.Tag);
+                    }
+                    else if (block is VisualizerHelper.InstructionOffsetCodeBlock && ((VisualizerHelper.InstructionOffsetCodeBlock)block).IsTarget)
+                    {
+                        int offset = Convert.ToInt32(((VisualizerHelper.InstructionOffsetCodeBlock)block).Tag);
+                        ScrollToInstruction(offset);
                     }
                 }
-            });
-
+                else if (e.Button == System.Windows.Forms.MouseButtons.Right)
+                {
+                    // operand
+                    if (block is VisualizerHelper.TypeCodeBlock || block is VisualizerHelper.MemberCodeBlock)
+                    {
+                        mnuMember.Tag = block.Tag;
+                        mnuMember.Show(Cursor.Position);
+                        mnuMember.UpdateAnalyzeTypeMenuEnabledStatus(false);
+                    }
+                }
+            }
 
             if (e.Button == System.Windows.Forms.MouseButtons.XButton1)
                 browser.GoBack();
@@ -277,135 +144,117 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 browser.GoForward();
         }
 
-        private void pnl_MouseDown(object sender, MouseEventArgs e)
-        {
-            var currentMethod = GetCurrentSelectedMethod();
-            if (currentMethod != null)
-            {
-                int lineIndex = txtInfo.GetLineFromCharIndex(txtInfo.GetCharIndexFromPosition(new Point(e.X, e.Y)));
-
-                int ilOffset;
-                if (TryGetILOffset(txtInfo.Lines[lineIndex], out ilOffset))
-                {
-                    BreakpointManager.Instance.ToggleBreakpoint(currentMethod, ilOffset);
-                }
-
-                pnl.Invalidate();
-            }
-        }
-
-        private Dictionary<int, int> ilOffsetsByLine;
-        private void UpdateILOffsets()
-        {
-            var lines = txtInfo.Lines; // ye gods, it builds the array in the get {} which is epic slow with 1000+ lines
-
-            ilOffsetsByLine = new Dictionary<int, int>();
-            for (int line = 0; line < lines.Length; line++)
-            {
-                int ilOffset;
-                if (TryGetILOffset(lines[line], out ilOffset))
-                {
-                    ilOffsetsByLine[line] = ilOffset;
-                }
-            }
-        }
-
-        private void pnl_Paint(object sender, PaintEventArgs e)
-        {
-            var currentMethod = GetCurrentSelectedMethod();
-            if (currentMethod != null)
-            {
-                HashSet<int> ilOffsets = new HashSet<int>(BreakpointManager.Instance.GetBreakpoints(currentMethod));
 
 
-                foreach (var p in ilOffsetsByLine)
-                {
-                    var line = p.Key;
-                    var ilOffset = p.Value;
-
-                    bool posSet = false;
-                    Point pos = new Point();
-                    if (ilOffsets.Contains(ilOffset))
-                    {
-                        if (!posSet)
-                        {
-                            pos = txtInfo.GetPositionFromCharIndex(txtInfo.GetFirstCharIndexFromLine(line));
-                            posSet = true;
-                        }
-                        e.Graphics.DrawImage(Resources.breakpoint, new PointF(0, pos.Y));
-                    }
-
-                    if (jumpedToOffset == ilOffset)
-                    {
-                        if (!posSet)
-                        {
-                            pos = txtInfo.GetPositionFromCharIndex(txtInfo.GetFirstCharIndexFromLine(line));
-                            posSet = true;
-                        }
-                        e.Graphics.DrawImage(Resources.jumpedto, new PointF(0, pos.Y));
-                    }
-
-                    var debugger = ILDebugManager.Instance.Debugger;
-                    if (debugger != null && debugger.CurrentMethod == currentMethod && debugger.CurrentInstruction != null && debugger.CurrentInstruction.Offset == ilOffset)
-                    {
-                        if (!posSet)
-                        {
-                            pos = txtInfo.GetPositionFromCharIndex(txtInfo.GetFirstCharIndexFromLine(line));
-                            posSet = true;
-                        }
-                        e.Graphics.DrawImage(Resources.CurrentLine, new PointF(0, pos.Y));
-                    }
-                }
-            }
-        }
-
-
-        private void txtInfo_VScroll(object sender, EventArgs e)
-        {
-            pnl.Invalidate();
-        }
 
         public void FocusOnActiveLine()
         {
             if (ILDebugManager.Instance.Debugger == null || ILDebugManager.Instance.Debugger.Returned)
                 return;
 
+            var debugger = ILDebugManager.Instance.Debugger;
             var currentMethod = GetCurrentSelectedMethod();
-            if (currentMethod != null)
+            if (debugger != null && currentMethod != null && debugger.CurrentMethod == currentMethod)
             {
+                int line = txtNewInfo.ILOffsetsByLine.Where(p => p.Value == debugger.CurrentInstruction.Offset).Select(p => p.Key).First();
 
-                foreach (var p in ilOffsetsByLine)
-                {
-                    var line = p.Key;
-                    var ilOffset = p.Value;
+                txtNewInfo.Selection.Start = new FastColoredTextBoxNS.Place(0, line);
+                txtNewInfo.DoSelectionVisible();
+                txtNewInfo.Focus();
 
-
-                    var debugger = ILDebugManager.Instance.Debugger;
-                    if (debugger != null && debugger.CurrentMethod == currentMethod && debugger.CurrentInstruction.Offset == ilOffset)
-                    {
-                        txtInfo.Select(txtInfo.GetFirstCharIndexFromLine(line), 0);
-                        txtInfo.Focus();
-                    }
-                }
             }
         }
 
         private int jumpedToOffset;
         internal void ScrollToInstruction(int offset)
         {
-            foreach (var p in ilOffsetsByLine)
-            {
-                var line = p.Key;
-                var ilOffset = p.Value;
+            var targetBlock = txtNewInfo.CodeBlocks.OfType<VisualizerHelper.InstructionOffsetCodeBlock>()
+                                                             .Where(b => !b.IsTarget && (int)b.Tag == offset).FirstOrDefault();
 
-                if (ilOffset == offset)
+            txtNewInfo.Selection.Start = new FastColoredTextBoxNS.Place(0, targetBlock.Start.iLine);
+            txtNewInfo.DoSelectionVisible();
+
+            jumpedToOffset = offset;
+            txtNewInfo.Invalidate();
+        }
+
+        private HashSet<int> breakPointILOffsets;
+        private void txtNewInfo_PrepareForPaint(object sender, EventArgs e)
+        {
+            var currentMethod = GetCurrentSelectedMethod();
+            if (currentMethod != null)
+                breakPointILOffsets = BreakpointManager.Instance.GetBreakpoints(currentMethod);
+            else
+                breakPointILOffsets = null;
+        }
+
+        private void txtNewInfo_PaintLine(object sender, FastColoredTextBoxNS.PaintLineEventArgs e)
+        {
+            var currentMethod = GetCurrentSelectedMethod();
+            if (currentMethod != null)
+            {
+                int ilOffset;
+                if (txtNewInfo.ILOffsetsByLine.TryGetValue(e.LineIndex, out ilOffset))
                 {
-                    txtInfo.SelectionStart = txtInfo.GetFirstCharIndexFromLine(line);
-                    txtInfo.ScrollToCaret();
-                    jumpedToOffset = offset;
+                    if (breakPointILOffsets.Contains(ilOffset))
+                    {
+                        using (var bmp = Resources.breakpoint)
+                            e.Graphics.DrawImage(bmp, new PointF(0, e.LineRect.Y));
+                    }
+
+                    if (jumpedToOffset == ilOffset)
+                    {
+                        using (var bmp = Resources.jumpedto)
+                            e.Graphics.DrawImage(bmp, new PointF(0, e.LineRect.Y));
+                    }
+
+                    var debugger = ILDebugManager.Instance.Debugger;
+                    if (debugger != null && debugger.CurrentMethod == currentMethod && debugger.CurrentInstruction != null && debugger.CurrentInstruction.Offset == ilOffset)
+                    {
+                        e.Graphics.FillRectangle(Brushes.Yellow, e.LineRect);
+                        using (var bmp = Resources.CurrentLine)
+                            e.Graphics.DrawImage(bmp, new PointF(0, e.LineRect.Y));
+                    }
                 }
             }
-            pnl.Invalidate();
+        }
+
+        private void txtNewInfo_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.X < txtNewInfo.LeftPadding) // in margin
+            {
+                var currentMethod = GetCurrentSelectedMethod();
+                if (currentMethod != null)
+                {
+                    int lineIndex = txtNewInfo.PointToPlace(new Point(e.X, e.Y)).iLine;
+
+                    //int lineIndex = txtInfo.GetLineFromCharIndex(txtInfo.GetCharIndexFromPosition(new Point(e.X, e.Y)));
+                    int ilOffset;
+                    if (txtNewInfo.ILOffsetsByLine.TryGetValue(lineIndex, out ilOffset))
+                        BreakpointManager.Instance.ToggleBreakpoint(currentMethod, ilOffset);
+
+                    //int ilOffset;
+                    //if (TryGetILOffset(txtInfo.Lines[lineIndex], out ilOffset))
+                    //{
+                    //    BreakpointManager.Instance.ToggleBreakpoint(currentMethod, ilOffset);
+                    //}
+                    txtNewInfo.Invalidate();
+
+                }
+            }
+        }
+
+        private void txtNewInfo_ToolTipNeeded(object sender, FastColoredTextBoxNS.ToolTipNeededEventArgs e)
+        {
+            var block = txtNewInfo.CodeBlockAt(e.Place);
+
+            if (block is VisualizerHelper.InstructionOpCodeCodeBlock)
+            {
+                ILInstruction instruction = (ILInstruction)((VisualizerHelper.InstructionOpCodeCodeBlock)block).Tag;
+
+                e.ToolTipTitle = instruction.Code.ToString();
+                e.ToolTipText = instruction.Code.ToDescription();
+            }
         }
     }
 

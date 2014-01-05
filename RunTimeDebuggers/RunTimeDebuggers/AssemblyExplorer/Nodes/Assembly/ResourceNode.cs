@@ -35,18 +35,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
             this.StatusText = resource;
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
             get
             {
-                //if (IsImage())
-                //{
-                //    using (Stream s = ass.GetManifestResourceStream(resource))
-                //    {
-                //        return MethodNode.RTFHeader.Replace("@BODY@", GetImage(s, 100, 100));
-                //    }
-                //}
-                return this.Text;
+                return new List<VisualizerHelper.CodeBlock>()
+                {
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(this.Text)
+                };
             }
         }
 

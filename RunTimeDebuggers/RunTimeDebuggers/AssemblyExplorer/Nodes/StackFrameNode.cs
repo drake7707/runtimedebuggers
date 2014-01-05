@@ -30,7 +30,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.UpdateText(recursive);
 
             var mInfo = frame.GetMethod();
-            
+
             string str = "";
             str += frame.GetILOffset().ToString("x4") + " in ";
 
@@ -38,7 +38,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             {
                 if (prefixDeclaringType)
                 {
-                    if(mInfo.DeclaringType != null)
+                    if (mInfo.DeclaringType != null)
                         str += mInfo.DeclaringType.ToSignatureString() + "::";
                 }
 
@@ -60,7 +60,8 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
             base.OnAliasChanged(obj, alias);
         }
-        public override string Visualization
+
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
             get
             {

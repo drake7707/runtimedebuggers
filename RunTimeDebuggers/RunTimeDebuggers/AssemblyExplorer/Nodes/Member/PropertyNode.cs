@@ -90,9 +90,16 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return VisualizerHelper.GetMemberVisualization(Property) + @"\line " + GetValueIfStaticAndReadable(); }
+            get {
+
+                var blocks = new List<VisualizerHelper.CodeBlock>();
+                blocks.AddRange(VisualizerHelper.GetMemberVisualization(Property));
+                blocks.Add(new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(Environment.NewLine));
+                blocks.Add(new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(GetValueIfStaticAndReadable() + ""));
+                return blocks;
+            }
         }
 
         public override MemberInfo Member

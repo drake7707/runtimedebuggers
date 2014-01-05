@@ -8,7 +8,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 {
     class BaseTypesNode : AbstractAssemblyNode
     {
-           private bool populated;
+        private bool populated;
 
         private Type type;
 
@@ -32,7 +32,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             Nodes.Clear();
 
             Type baseType = type.BaseType;
-            if(baseType != null)
+            if (baseType != null)
                 Nodes.Add(new BaseTypeNode(baseType));
 
             foreach (var t in type.GetInterfacesOfType(false))
@@ -43,20 +43,23 @@ namespace RunTimeDebuggers.AssemblyExplorer
             populated = true;
         }
 
-        
 
-   
+
+
         public override void UpdateText(bool recursive)
         {
             base.UpdateText(recursive);
             this.Text = "Base Types";
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return ""; }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>();
+            }
         }
 
-    
+
     }
 }

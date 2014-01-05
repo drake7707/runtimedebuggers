@@ -96,9 +96,16 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return this.Text + Environment.NewLine + GetValueIfStaticAndReadable(); }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>()
+                {
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(this.Text + Environment.NewLine + GetValueIfStaticAndReadable())
+                };
+            }
         }
 
         public override MemberInfo Member
