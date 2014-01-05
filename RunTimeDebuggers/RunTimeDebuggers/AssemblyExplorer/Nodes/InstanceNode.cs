@@ -31,7 +31,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public override void Populate(string filterstring)
         {
-            
+
         }
 
         public override void UpdateText(bool recursive)
@@ -39,9 +39,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
             this.Text = "(" + result.Instance + ")" + " at " + result.Origin.GetName(true);
         }
 
-        public override string Visualization
+        public override List<VisualizerHelper.CodeBlock> Visualization
         {
-            get { return this.Text; }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>() { 
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.ValueCodeBlock(result.Instance)
+                };
+            }
         }
 
         public override System.Reflection.MemberInfo Member

@@ -80,7 +80,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         }
 
-        public override string Visualization
+        public override List<VisualizerHelper.CodeBlock> Visualization
         {
             get
             {

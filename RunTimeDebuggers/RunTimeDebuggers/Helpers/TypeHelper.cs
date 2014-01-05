@@ -527,6 +527,36 @@ namespace RunTimeDebuggers.Helpers
             return false;
         }
 
+         /// <summary>
+        /// Casts the given object to the given type
+        /// </summary>
+        /// <param name="t">The type to cast the object to</param>
+        /// <param name="o">The object to be casted</param>
+        /// <returns>The casted object</returns>
+        public static object CastTo(this object o, Type t)
+        {
+            try
+            {
+                return typeof(TypeHelper).GetMethod("CastGeneric", BindingFlags.Static | BindingFlags.NonPublic)
+                                         .MakeGenericMethod(t).Invoke(null, new object[] { o });
+            }
+            catch (Exception ex)
+            {
+                // throw actual exception
+                throw ex.InnerException;
+            }
+        }
+
+        /// <summary>
+        /// Casts the given object to the given type
+        /// </summary>
+        /// <typeparam name="T">The type to cast the object to</typeparam>
+        /// <param name="o">The object to be casted</param>
+        /// <returns>The casted object</returns>
+        private static T CastGeneric<T>(object o)
+        {
+            return (T)o;
+        }
 
         public static IEnumerable<MemberInfo> GetAllMembers(this Type t)
         {

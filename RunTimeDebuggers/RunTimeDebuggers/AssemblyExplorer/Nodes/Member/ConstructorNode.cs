@@ -55,7 +55,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
             get
             {

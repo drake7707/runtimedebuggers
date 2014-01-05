@@ -33,9 +33,15 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return ass.FullName; }
+            get
+            {
+                return new List<VisualizerHelper.CodeBlock>()
+                {
+                    new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(ass.FullName)
+                };
+            }
         }
 
     }

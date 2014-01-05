@@ -53,7 +53,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
         {
             base.UpdateText(recursive);
             string str = "";
-            
+
             str += field.GetName(prefixDeclaringType) + " : " + field.FieldType.ToSignatureString();
 
             if (this.Text != str)
@@ -72,9 +72,17 @@ namespace RunTimeDebuggers.AssemblyExplorer
             base.OnAliasChanged(obj, alias);
         }
 
-        public override string Visualization
+        public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
         {
-            get { return VisualizerHelper.GetMemberVisualization(Field) + @"\line " + GetValueIfStaticAndReadable(); }
+            get
+            {
+
+                var blocks = new List<VisualizerHelper.CodeBlock>();
+                blocks.AddRange(VisualizerHelper.GetMemberVisualization(Field));
+                blocks.Add(new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(Environment.NewLine));
+                blocks.Add(new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(GetValueIfStaticAndReadable() + ""));
+                return blocks;
+            }
         }
 
         public override MemberInfo Member
