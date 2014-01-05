@@ -7,11 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Security.Permissions;
 
 
 namespace TestForm
 {
     [TestAttribute("TEST attribute")]
+    [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+    [SecurityPermission(SecurityAction.Assert, Unrestricted = false, Execution = true, UnmanagedCode = true)]
     public partial class MainForm : Form, IFoo
     {
 
@@ -400,9 +403,6 @@ namespace TestForm
         public TestAttribute(string positionalString)
         {
             this.positionalString = positionalString;
-
-            // TODO: Implement code here
-            throw new NotImplementedException();
         }
 
         public string PositionalString

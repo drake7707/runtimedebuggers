@@ -556,7 +556,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Unable to dump assembly: " + ex.GetType().FullName + " - " + ex.Message);
+                    MessageBox.Show("Unable to dump assembly: " + ex.GetType().FullName + " - " + ex.Message + Environment.NewLine + ex.StackTrace);
                 }
             }
         }

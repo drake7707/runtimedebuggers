@@ -502,7 +502,7 @@ namespace RunTimeDebuggers.Helpers
                 return false;
             else
             {
-                bool anyPinned =  body.LocalVariables.Any(p => p.IsPinned);
+                bool anyPinned = body.LocalVariables.Any(p => p.IsPinned);
                 if (anyPinned)
                     return true;
                 else
@@ -665,19 +665,19 @@ namespace RunTimeDebuggers.Helpers
         public static string GetName(this MemberInfo m, bool prefixDeclaredType)
         {
             if (prefixDeclaredType && m.DeclaringType != null)
-                return m.DeclaringType.ToSignatureString() + "::" + AliasManager.Instance.GetFullNameWithAlias(m,m.Name);
+                return m.DeclaringType.ToSignatureString() + "::" + AliasManager.Instance.GetFullNameWithAlias(m, m.Name);
             else
                 return AliasManager.Instance.GetFullNameWithAlias(m, m.Name);
         }
 
         public static string ToSignatureString(this FieldInfo f)
         {
-            return f.FieldType.ToSignatureString() + " " + AliasManager.Instance.GetFullNameWithAlias(f,f.Name);
+            return f.FieldType.ToSignatureString() + " " + AliasManager.Instance.GetFullNameWithAlias(f, f.Name);
         }
 
         public static string ToSignatureString(this PropertyInfo p)
         {
-            return p.PropertyType.ToSignatureString() + " " + AliasManager.Instance.GetFullNameWithAlias(p,p.Name);
+            return p.PropertyType.ToSignatureString() + " " + AliasManager.Instance.GetFullNameWithAlias(p, p.Name);
         }
 
         public static string ToSignatureString(this MemberInfo m)
@@ -710,7 +710,7 @@ namespace RunTimeDebuggers.Helpers
             {
                 string typeName;
                 if (t.IsGenericType)
-                    typeName =  TrimGenericCounterFromTypeName(t.Name) + "<" + string.Join(",", t.GetGenericArguments().Select(typ => typ.ToSignatureString(appendWithAlias)).ToArray()) + ">";
+                    typeName = TrimGenericCounterFromTypeName(t.Name) + "<" + string.Join(",", t.GetGenericArguments().Select(typ => typ.ToSignatureString(appendWithAlias)).ToArray()) + ">";
                 else
                     typeName = t.Name;
 
@@ -785,7 +785,7 @@ namespace RunTimeDebuggers.Helpers
         {
             string sig = "";
 
-            sig += AliasManager.Instance.GetFullNameWithAlias(c,c.Name);
+            sig += AliasManager.Instance.GetFullNameWithAlias(c, c.Name);
 
             if (c.DeclaringType != null && !c.DeclaringType.IsAbstract)
             {
@@ -836,6 +836,160 @@ namespace RunTimeDebuggers.Helpers
         }
 
 
-        
+        public static IList<CustomAttributeData> GetCustomAttributesDataInclSecurity(this Assembly t)
+        {
+            var customAttributeData = CustomAttributeData.GetCustomAttributes(t).Where(ca => !ca.Constructor.DeclaringType.IsSecurityAttribute()).ToList();
+            var securityAttributes = t.GetCustomAttributes(false).Where(a => a.GetType().IsSecurityAttribute()).Cast<System.Security.Permissions.SecurityAttribute>().ToList();
+
+            foreach (var secAttr in securityAttributes)
+                customAttributeData.Add(CreateCustomAttributeDataFromSecurityAttribute(secAttr));
+
+            return customAttributeData;
+        }
+
+        public static IList<CustomAttributeData> GetCustomAttributesDataInclSecurity(this Module t)
+        {
+            var customAttributeData = CustomAttributeData.GetCustomAttributes(t).Where(ca => !ca.Constructor.DeclaringType.IsSecurityAttribute()).ToList();
+            var securityAttributes = t.GetCustomAttributes(false).Where(a => a.GetType().IsSecurityAttribute()).Cast<System.Security.Permissions.SecurityAttribute>().ToList();
+
+            foreach (var secAttr in securityAttributes)
+                customAttributeData.Add(CreateCustomAttributeDataFromSecurityAttribute(secAttr));
+
+            return customAttributeData;
+        }
+
+        public static IList<CustomAttributeData> GetCustomAttributesDataInclSecurity(this MemberInfo t)
+        {
+            var customAttributeData = CustomAttributeData.GetCustomAttributes(t).Where(ca => !ca.Constructor.DeclaringType.IsSecurityAttribute()).ToList();
+            var securityAttributes = t.GetCustomAttributes(false).Where(a => a.GetType().IsSecurityAttribute()).Cast<System.Security.Permissions.SecurityAttribute>().ToList();
+
+            foreach (var secAttr in securityAttributes)
+                customAttributeData.Add(CreateCustomAttributeDataFromSecurityAttribute(secAttr));
+
+            return customAttributeData;
+        }
+
+        public static IList<CustomAttributeData> GetCustomAttributesDataInclSecurity(this ParameterInfo t)
+        {
+            var customAttributeData = CustomAttributeData.GetCustomAttributes(t).Where(ca => !ca.Constructor.DeclaringType.IsSecurityAttribute()).ToList();
+            var securityAttributes = t.GetCustomAttributes(false).Where(a => a.GetType().IsSecurityAttribute()).Cast<System.Security.Permissions.SecurityAttribute>().ToList();
+
+            foreach (var secAttr in securityAttributes)
+                customAttributeData.Add(CreateCustomAttributeDataFromSecurityAttribute(secAttr));
+
+            return customAttributeData;
+        }
+
+
+
+
+        private static CustomAttributeData CreateCustomAttributeDataFromSecurityAttribute(System.Security.Permissions.SecurityAttribute secAttr)
+        {
+            // find the constructor with the least amount of parameters, the rest will be set via Named arguments
+            var ctors = secAttr.GetType().GetConstructorsOfType(false);
+            ConstructorInfo ctor = ctors.First();
+            foreach (var ct in ctors.Skip(1))
+            {
+                if (ct.GetParameters().Length < ctor.GetParameters().Length)
+                    ctor = ct;
+            }
+
+            System.Security.Permissions.SecurityAttribute defaultSecAttr = null;
+
+
+            List<CustomAttributeTypedArgument> constructorArguments = new List<CustomAttributeTypedArgument>();
+            if (ctor.GetParameters().Length == 1 && ctor.GetParameters().First().ParameterType == typeof(System.Security.Permissions.SecurityAction))
+            {
+                // most security permissions have a constructor with only SecurityAction as parameter                
+                constructorArguments.Add(CreateTypedArgument(secAttr.Action));
+
+                defaultSecAttr = (System.Security.Permissions.SecurityAttribute)ctor.Invoke(new object[] { secAttr.Action });
+            }
+            else
+            {
+                // TODO i guess?
+                // analyze the IL of the ctor to determine which parameter of the ctor goes to which field
+                //Disassembler dis = new Disassembler(ctor);
+
+            }
+            
+            List<CustomAttributeNamedArgument> namedArguments = new List<CustomAttributeNamedArgument>();
+            foreach (var f in secAttr.GetType().GetFieldsOfType(true, false).Where(fld => fld.IsPublic))
+            {
+                object value = f.GetValue(secAttr);
+                if (defaultSecAttr != null)
+                {
+                    // check if it differs from a default instance
+                    object defaultValue = f.GetValue(defaultSecAttr);
+                    if (object.Equals(value, defaultValue))
+                    {
+                        // it's the same, named argument is not necessary
+                    }
+                    else
+                        namedArguments.Add(CreateNamedArgument(f, value));
+                }
+            }
+
+            foreach (var prop in secAttr.GetType().GetPropertiesOfType(true, false).Where(prop => prop.CanRead && prop.CanWrite && prop.GetGetMethod().IsPublic))
+            {
+                object value = prop.GetValue(secAttr, null);
+                if (defaultSecAttr != null)
+                {
+                    // check if it differs from a default instance
+                    object defaultValue = prop.GetValue(defaultSecAttr, null);
+                    if (object.Equals(value, defaultValue))
+                    {
+                        // it's the same, named argument is not necessary
+                    }
+                    else
+                        namedArguments.Add(CreateNamedArgument(prop, value));
+                }
+            }
+
+            var cad = (CustomAttributeData)System.Runtime.Serialization.FormatterServices.GetSafeUninitializedObject(typeof(CustomAttributeData));
+            typeof(CustomAttributeData).GetField("m_ctor", BindingFlags.NonPublic | BindingFlags.Instance)
+                                       .SetValue(cad, ctor);
+
+            typeof(CustomAttributeData).GetField("m_namedArgs", BindingFlags.NonPublic | BindingFlags.Instance)
+                                       .SetValue(cad, (IList<CustomAttributeNamedArgument>)namedArguments);
+
+            typeof(CustomAttributeData).GetField("m_typedCtorArgs", BindingFlags.NonPublic | BindingFlags.Instance)
+                                   .SetValue(cad, (IList<CustomAttributeTypedArgument>)constructorArguments);
+
+            // eh that'll do
+
+            //private ConstructorInfo m_ctor;
+            //private Module m_scope;
+            //private MemberInfo[] m_members;
+            //private CustomAttributeCtorParameter[] m_ctorParams;
+            //private CustomAttributeNamedParameter[] m_namedParams;
+            //private IList<CustomAttributeTypedArgument> m_typedCtorArgs;
+            //private IList<CustomAttributeNamedArgument> m_namedArgs;
+            return cad;
+        }
+
+        private static CustomAttributeTypedArgument CreateTypedArgument(object value)
+        {
+            var ctor = typeof(CustomAttributeTypedArgument).GetConstructorsOfType(false)
+                            .Where(ct => ct.GetParameters().Length == 1).First();
+
+            return (CustomAttributeTypedArgument)ctor.Invoke(new object[] { value });
+        }
+
+        private static CustomAttributeNamedArgument CreateNamedArgument(MemberInfo member, object value)
+        {
+            var ctor = typeof(CustomAttributeNamedArgument).GetConstructorsOfType(false)
+                                .Where(ct => ct.GetParameters().Length == 2 &&
+                                       ct.GetParameters()[0].ParameterType == typeof(MemberInfo) &&
+                                       ct.GetParameters()[1].ParameterType == typeof(object)).First();
+
+            return (CustomAttributeNamedArgument)ctor.Invoke(new object[] { member, value });
+        }
+
+
+        public static bool IsSecurityAttribute(this Type type)
+        {
+            return type == typeof(System.Security.Permissions.SecurityAttribute) || type.IsSubclassOf(typeof(System.Security.Permissions.SecurityAttribute));
+        }
     }
 }

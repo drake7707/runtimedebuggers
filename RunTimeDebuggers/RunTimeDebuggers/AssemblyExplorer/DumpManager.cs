@@ -126,7 +126,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             else
             {
                 string fullname = string.IsNullOrEmpty(t.Namespace) ? "" + t.Name : t.Namespace + "." + "" + t.Name;
-                tbuilder = mbuilder.DefineType(fullname , t.Attributes);
+                tbuilder = mbuilder.DefineType(fullname, t.Attributes);
             }
 
             typeMapping.Add(t, tbuilder);
@@ -950,10 +950,11 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void BuildAttributesOfAssembly(Assembly a, AssemblyBuilder abuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(a))
+            foreach (var ca in a.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                abuilder.SetCustomAttribute(cbuilder);
+                if(cbuilder != null)
+                    abuilder.SetCustomAttribute(cbuilder);
             }
 
             foreach (Module m in a.GetModules())
@@ -962,10 +963,11 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void BuildAttributesOfModule(Module m, ModuleBuilder mbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(m))
+            foreach (var ca in m.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                mbuilder.SetCustomAttribute(cbuilder);
+                if(cbuilder != null)
+                    mbuilder.SetCustomAttribute(cbuilder);
             }
 
             foreach (var t in m.GetTypesSafe())
@@ -976,10 +978,11 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void BuildAttributesOfType(Type t, TypeBuilder tbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(t))
+            foreach (var ca in t.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                tbuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    tbuilder.SetCustomAttribute(cbuilder);
             }
 
             foreach (FieldInfo f in t.GetFieldsOfType(false, true))
@@ -997,37 +1000,41 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void BuildAttributesOfConstructor(ConstructorInfo c, ConstructorBuilder constructorBuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(c))
+            foreach (var ca in c.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                constructorBuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    constructorBuilder.SetCustomAttribute(cbuilder);
             }
         }
 
         private void BuildAttributesOfField(FieldInfo f, FieldBuilder fbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(f))
+            foreach (var ca in f.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                fbuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    fbuilder.SetCustomAttribute(cbuilder);
             }
         }
 
         private void BuildAttributesOfProperty(PropertyInfo p, PropertyBuilder pbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(p))
+            foreach (var ca in p.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                pbuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    pbuilder.SetCustomAttribute(cbuilder);
             }
         }
 
         private void BuildAttributesOfMethod(MethodInfo m, MethodBuilder mbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(m))
+            foreach (var ca in m.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                mbuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    mbuilder.SetCustomAttribute(cbuilder);
             }
 
             foreach (var p in m.GetParameters())
@@ -1036,16 +1043,28 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void BuildAttributesOfParameter(ParameterInfo p, ParameterBuilder pbuilder)
         {
-            foreach (var ca in CustomAttributeData.GetCustomAttributes(p))
+            foreach (var ca in p.GetCustomAttributesDataInclSecurity())
             {
                 var cbuilder = GetCustomAttributeBuilder(ca);
-                pbuilder.SetCustomAttribute(cbuilder);
+                if (cbuilder != null)
+                    pbuilder.SetCustomAttribute(cbuilder);
             }
         }
 
-
         private CustomAttributeBuilder GetCustomAttributeBuilder(CustomAttributeData cad)
         {
+            if (cad.Constructor.DeclaringType == typeof(System.Security.Permissions.SecurityAttribute) ||
+                cad.Constructor.DeclaringType.IsSubclassOf(typeof(System.Security.Permissions.SecurityAttribute)))
+            {
+                Console.WriteLine("Warning: ignoring attribute data, the declaring type is (descendant of) SecurityAttribute");
+                // sigh
+                // http://connect.microsoft.com/VisualStudio/feedback/details/785912/customattributedata-getcustomattributes-returns-invalid-data-for-securitypermissionattribute-declarations
+
+                // even with the shenanigans pulled in GetCustomAttributesDataInclSecurity it still complains about "Bad bits set" when trying to build the type
+                // so strip the security flags until we found a better workaround
+                return null;
+            }
+
             ConstructorInfo targetConstructor;
             ConstructorBuilder cb;
             if (constructorMapping.TryGetValue(cad.Constructor, out cb)) // in mapping, refers to constructed type
