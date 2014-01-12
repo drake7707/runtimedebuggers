@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace RunTimeDebuggers.AssemblyExplorer
 {
- public   class ILDebugger
+    public class ILDebugger
     {
         private List<ILInstruction> instructions;
         private int curInstructionIndex;
@@ -40,35 +40,61 @@ namespace RunTimeDebuggers.AssemblyExplorer
         private Dictionary<int, List<ProtectedBlock>> availableProtectedBlocksByOffset = new Dictionary<int, List<ProtectedBlock>>();
 
 
-        private object[] locals;
-        private IList<LocalVariableInfo> localVariableInfos;
+        private Local[] locals;
+        public Local[] Locals { get { return locals; } }
 
         private object thisObject;
 
-        private object[] parameters;
-        private ParameterInfo[] parameterInfos;
+        private Parameter[] parameters;
+        public Parameter[] Parameters { get { return parameters; } }
+
+        public class Parameter
+        {
+            public object Value { get; set; }
+            public ParameterInfo Info { get; set; }
+        }
+
+        public class Local
+        {
+            public object Value { get; set; }
+            public LocalVariableInfo Info { get; set; }
+        }
 
         public ILDebugger(MethodBase mb, object thisObject, object[] parameters)
         {
             this.method = mb;
             this.thisObject = thisObject;
 
-            // add current execution stack of protected blocks
-            protectedBlockExecution.Push(new ProtectedBlockExecution());
+            var pars = mb.GetParameters();
+            this.parameters = parameters.Select((p, idx) => new Parameter() { Value = p, Info = pars[idx] })
+                                        .ToArray();
+
+            Initialize(mb);
+        }
+
+        private ILDebugger(MethodBase mb, object thisObject, Parameter[] parameters)
+        {
+            this.method = mb;
+            this.thisObject = thisObject;
 
             this.parameters = parameters;
-            parameterInfos = mb.GetParameters();
 
+            Initialize(mb);
+        }
+
+        private void Initialize(MethodBase mb)
+        {
             this.instructions = mb.GetILInstructions();
             curInstructionIndex = 0;
 
-
-            localVariableInfos = mb.GetMethodBody().LocalVariables;
-            locals = new object[localVariableInfos.Count];
-            foreach (var local in localVariableInfos)
-                locals[local.LocalIndex] = local.LocalType.GetDefault();
+            // add current execution stack of protected blocks
+            protectedBlockExecution.Push(new ProtectedBlockExecution());
 
 
+            var localVariableInfos = mb.GetMethodBody().LocalVariables;
+            locals = new Local[localVariableInfos.Count];
+            foreach (var lvi in localVariableInfos)
+                locals[lvi.LocalIndex] = new Local() { Value = lvi.LocalType.GetDefault(), Info = lvi };
 
             var exceptionClauses = mb.GetMethodBody().ExceptionHandlingClauses
                                      .GroupBy(e => e.TryOffset)
@@ -90,7 +116,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     blocks.Add(pb);
                 }
             }
-
         }
 
         public int CurrentInstructionIndex
@@ -283,7 +308,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             if (instruction.Code == OpCodes.Throw)
             {
                 var entry = stack.Pop();
-                throw (Exception)entry.Value;
+                throw (Exception)entry.Value; // TODO doesn't adjust instruction index
             }
 
             return false;
@@ -304,7 +329,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private bool DoLeave(ILInstruction instruction)
         {
-            if (instruction.Code == OpCodes.Leave ||instruction.Code == OpCodes.Leave_S)
+            if (instruction.Code == OpCodes.Leave || instruction.Code == OpCodes.Leave_S)
             {
 
                 int oldInstructionIndex = curInstructionIndex;
@@ -323,9 +348,9 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 {
                     // check if there are finallies to be executed
 
-                }    
+                }
 
-                
+
                 return true;
             }
 
@@ -424,20 +449,20 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var entry = stack.Pop();
                 if (entry.Value == null)
                 {
-                    stack.Push(new StackEntry() { ByRef = false, Value = null, Type = null });
+                    stack.Push(new StackEntry() { Value = null, Type = null });
                     return true;
                 }
                 else
                 {
                     Type targetType = (Type)instruction.Operand;
-                    stack.Push(new StackEntry() { ByRef = false, Value = entry.Value != null ? entry.Value.CastTo(targetType) : null, Type = targetType });
+                    stack.Push(new StackEntry() { Value = entry.Value != null ? entry.Value.CastTo(targetType) : null, Type = targetType });
                 }
                 return true;
             }
             return false;
         }
 
-       
+
 
         private bool DoNewArr(ILInstruction instruction)
         {
@@ -486,7 +511,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 {
                     Type = value.Type,
                     Value = value.Value,
-                    ByRef = value.ByRef
                 };
 
                 stack.Push(value);
@@ -604,12 +628,23 @@ namespace RunTimeDebuggers.AssemblyExplorer
             {
                 if (method.IsStatic)
                 {
-                    stack.Push(new StackEntry()
+                    if (isByRef)
                     {
-                        Type = parameterInfos[paramIdx].ParameterType,
-                        Value = parameters[paramIdx],
-                        ByRef = isByRef
-                    });
+                        var pointer = new ParameterPointer(Parameters[paramIdx]);
+                        stack.Push(new StackEntry()
+                        {
+                            Type = pointer.Type,
+                            Value = pointer,
+                        });
+                    }
+                    else
+                    {
+                        stack.Push(new StackEntry()
+                        {
+                            Type = Parameters[paramIdx].Info.ParameterType,
+                            Value = Parameters[paramIdx].Value,
+                        });
+                    }
                 }
                 else
                 {
@@ -619,17 +654,28 @@ namespace RunTimeDebuggers.AssemblyExplorer
                         {
                             Type = thisObject.GetType(),
                             Value = thisObject,
-                            ByRef = isByRef
                         });
                     }
                     else
                     {
-                        stack.Push(new StackEntry()
+                        var parameter = Parameters[paramIdx - 1];
+                        if (isByRef)
                         {
-                            Type = parameterInfos[paramIdx - 1].ParameterType,
-                            Value = parameters[paramIdx - 1],
-                            ByRef = isByRef
-                        });
+                            var pointer = new ParameterPointer(parameter);
+                            stack.Push(new StackEntry()
+                            {
+                                Type = pointer.Type,
+                                Value = pointer,
+                            });
+                        }
+                        else
+                        {
+                            stack.Push(new StackEntry()
+                            {
+                                Type = parameter.Info.ParameterType,
+                                Value = parameter.Value,
+                            });
+                        }
                     }
                 }
                 return true;
@@ -660,7 +706,9 @@ namespace RunTimeDebuggers.AssemblyExplorer
             {
                 var entry = stack.Pop();
 
-                parameters[paramIdx] = entry.Value;
+                var par = Parameters[paramIdx];
+                par.Value = entry.Value;
+
                 return true;
             }
             return false;
@@ -671,17 +719,12 @@ namespace RunTimeDebuggers.AssemblyExplorer
             if (instruction.Code == OpCodes.Ldobj)
             {
                 var entry = stack.Pop();
-                //if (entry.ByRef)
-                //{
+
                 stack.Push(new StackEntry()
                 {
                     Type = entry.Type,
                     Value = entry.Value,
-                    ByRef = false
                 });
-                //}
-                //else
-                //    throw new Exception("Can't load an object from the current value on the stack. It was not passed by reference");
 
                 return true;
             }
@@ -721,14 +764,27 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 isLoadLocal = true;
             }
 
+            bool isByRef = instruction.Code == OpCodes.Ldloca || instruction.Code == OpCodes.Ldloca_S;
             if (isLoadLocal)
             {
-                stack.Push(new StackEntry()
+                if (isByRef)
                 {
-                    Type = localVariableInfos[localIdx].LocalType,
-                    Value = locals[localIdx],
-                    ByRef = instruction.Code == OpCodes.Ldloca || instruction.Code == OpCodes.Ldloca_S
-                });
+                    var pointer = new LocalPointer(Locals[localIdx]);
+                    stack.Push(new StackEntry()
+                    {
+                        Type = pointer.Type,
+                        Value = pointer,
+
+                    });
+                }
+                else
+                {
+                    stack.Push(new StackEntry()
+                    {
+                        Type = Locals[localIdx].Info.LocalType,
+                        Value = Locals[localIdx].Value,
+                    });
+                }
                 return true;
             }
             return false;
@@ -742,11 +798,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 instruction.Code == OpCodes.Ldind_U1 || instruction.Code == OpCodes.Ldind_U2 || instruction.Code == OpCodes.Ldind_U4)
             {
                 var addressStack = stack.Pop();
+
+                if (!(addressStack.Value is Pointer))
+                    throw new Exception("Error: the top of the stack is not a pointer");
+
                 stack.Push(new StackEntry()
                 {
-                    Value = addressStack.Value,
-                    Type = addressStack.Type,
-                    ByRef = false,
+                    Value = ((Pointer)addressStack.Value).Value,
+                    Type = ((Pointer)addressStack.Value).OriginalType,
                 });
 
                 return true;
@@ -757,16 +816,18 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private bool DoStoreIndirect(ILInstruction instruction)
         {
-            if (instruction.Code == OpCodes.Stind_I || instruction.Code == OpCodes.Stind_I1 || instruction.Code == OpCodes.Stind_I2 || instruction.Code == OpCodes.Ldind_I4 ||
+            if (instruction.Code == OpCodes.Stind_I || instruction.Code == OpCodes.Stind_I1 || instruction.Code == OpCodes.Stind_I2 || instruction.Code == OpCodes.Stind_I4 ||
                 instruction.Code == OpCodes.Stind_I8 || instruction.Code == OpCodes.Stind_R4 || instruction.Code == OpCodes.Stind_R8 || instruction.Code == OpCodes.Stind_Ref)
             {
+
+                var valueEntry = stack.Pop();
+
                 var addressStack = stack.Pop();
-                stack.Push(new StackEntry()
-                {
-                    Value = addressStack.Value,
-                    Type = addressStack.Type,
-                    ByRef = true,
-                });
+
+                if (!(addressStack.Value is Pointer))
+                    throw new Exception("Error, the value at the stack is not a pointer");
+
+                ((Pointer)(addressStack.Value)).Value = valueEntry.Value;
 
                 return true;
             }
@@ -808,7 +869,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             if (isStoreLocal)
             {
                 var entry = stack.Pop();
-                locals[localIdx] = entry.Value;
+                Locals[localIdx].Value = entry.Value;
                 return true;
             }
             return false;
@@ -816,31 +877,59 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private bool DoLoadField(ILInstruction instruction)
         {
+
+            bool isByRef = instruction.Code == OpCodes.Ldflda || instruction.Code == OpCodes.Ldsflda;
+
             if (instruction.Code == OpCodes.Ldfld || instruction.Code == OpCodes.Ldflda)
             {
                 FieldInfo fld = (FieldInfo)instruction.Operand;
 
                 var fieldOwner = stack.Pop();
 
-                var value = fld.GetValue(fieldOwner.Value);
-
-                stack.Push(new StackEntry()
+                // ldfld can load from a pointer
+                var fieldOwnerValue = fieldOwner.Value is Pointer ? ((Pointer)fieldOwner.Value).Value : fieldOwner.Value;
+                if (isByRef)
                 {
-                    Type = fld.FieldType,
-                    Value = value
-                });
+                    var pointer = new FieldPointer(fld, fieldOwnerValue);
+                    stack.Push(new StackEntry()
+                    {
+                        Type = pointer.Type,
+                        Value = pointer
+                    });
+                }
+                else
+                {
+                    var value = fld.GetValue(fieldOwnerValue);
+                    stack.Push(new StackEntry()
+                    {
+                        Type = fld.FieldType,
+                        Value = value
+                    });
+                }
                 return true;
             }
             else if (instruction.Code == OpCodes.Ldsfld || instruction.Code == OpCodes.Ldsflda)
             {
                 FieldInfo fld = (FieldInfo)instruction.Operand;
-                var value = fld.GetValue(null);
-
-                stack.Push(new StackEntry()
+                
+                if (isByRef)
                 {
-                    Type = fld.FieldType,
-                    Value = value
-                });
+                    var pointer = new FieldPointer(fld, null);
+                    stack.Push(new StackEntry()
+                    {
+                        Type = pointer.Type,
+                        Value = pointer
+                    });
+                }
+                else
+                {
+                    var value = fld.GetValue(null);
+                    stack.Push(new StackEntry()
+                    {
+                        Type = fld.FieldType,
+                        Value = value
+                    });
+                }
                 return true;
             }
 
@@ -856,13 +945,16 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var newValue = stack.Pop();
                 var fieldOwner = stack.Pop();
 
+                //stfld can also follow pointers
+                var fieldOwnerValue = fieldOwner.Value is Pointer ? ((Pointer)fieldOwner.Value).Value : fieldOwner.Value;
+
                 object value = newValue.Value;
                 if (fld.FieldType == typeof(bool))
                     value = Convert.ToBoolean(value);
                 else if (fld.FieldType == typeof(char))
                     value = Convert.ToChar(value);
 
-                fld.SetValue(fieldOwner.Value, value);
+                fld.SetValue(fieldOwnerValue, value);
                 return true;
             }
             else if (instruction.Code == OpCodes.Stsfld)
@@ -899,20 +991,30 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var index = stack.Pop();
                 var array = stack.Pop();
 
-                var value = (array.Value as Array).GetValue((int)index.Value);
-
                 //var func = CreateLoadElementOpCodeFunc(instruction.Code, instruction.Operand, array.Type, index.Type);
 
                 //var value = func.Invoke(null, new object[] { array.Value, index.Value });
 
                 //var value = ((Array)array.Value).GetValue(Convert.ToInt64(index));
-
-                stack.Push(new StackEntry()
+                bool isByRef = instruction.Code == OpCodes.Ldelema;
+                if (isByRef)
                 {
-                    Value = value,
-                    Type = value == null ? ((Array)array.Value).GetType().GetElementType() : value.GetType(),
-                    ByRef = (instruction.Code == OpCodes.Ldelema)
-                });
+                    var pointer = new ArrayPointer((Array)array.Value, (int)index.Value);
+                    stack.Push(new StackEntry()
+                    {
+                        Value = pointer,
+                        Type = pointer.Type,
+                    });
+                }
+                else
+                {
+                    var value = (array.Value as Array).GetValue((int)index.Value);
+                    stack.Push(new StackEntry()
+                    {
+                        Value = value,
+                        Type = value == null ? ((Array)array.Value).GetType().GetElementType() : value.GetType(),
+                    });
+                }
 
                 return true;
             }
@@ -947,6 +1049,8 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     value = Convert.ToSingle(value);
                 else if (instruction.Code == OpCodes.Stelem_R8)
                     value = Convert.ToDouble(value);
+                //else if (instruction.Code == OpCodes.Stelem_Ref)
+                //    value = value;
 
                 if (((Array)array.Value).GetType().GetElementType() == typeof(bool))
                     value = Convert.ToBoolean(value);
@@ -983,8 +1087,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(instruction.Code, left.Type, left.ByRef, right.Type, right.ByRef);
-                object result = func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(instruction.Code, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                object result = func.Invoke(null, new object[] { leftValue, rightValue });
 
                 stack.Push(new StackEntry()
                 {
@@ -1056,8 +1166,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Ceq, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Ceq, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = result;
                 isBranch = true;
             }
@@ -1066,8 +1182,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Clt, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Clt, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = !result;
                 isBranch = true;
             }
@@ -1076,8 +1198,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Clt_Un, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Clt_Un, leftType, left.Value is Pointer, right.Type, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = !result;
                 isBranch = true;
             }
@@ -1086,8 +1214,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt, left.Type, left.Value is Pointer, right.Type, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = result;
                 isBranch = true;
             }
@@ -1096,8 +1230,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt_Un, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt_Un, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = result;
                 isBranch = true;
             }
@@ -1106,8 +1246,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = !result;
                 isBranch = true;
             }
@@ -1116,8 +1262,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt_Un, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Cgt_Un, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = !result;
                 isBranch = true;
             }
@@ -1126,8 +1278,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Clt, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Clt, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = result;
                 isBranch = true;
             }
@@ -1136,8 +1294,15 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Clt_Un, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Clt_Un, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = result;
                 isBranch = true;
             }
@@ -1146,8 +1311,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var right = stack.Pop();
                 var left = stack.Pop();
 
-                var func = CreateBooleanOpCodeFunc(OpCodes.Ceq, left.Type, left.ByRef, right.Type, right.ByRef);
-                bool result = (bool)func.Invoke(null, new object[] { left.Value, right.Value });
+                object leftValue = left.Value is Pointer ? ((Pointer)left.Value).Value : left.Value;
+                Type leftType = left.Value is Pointer ? ((Pointer)left.Value).OriginalType : left.Type;
+
+                object rightValue = right.Value is Pointer ? ((Pointer)right.Value).Value : right.Value;
+                Type rightType = right.Value is Pointer ? ((Pointer)right.Value).OriginalType : right.Type;
+
+                var func = CreateBooleanOpCodeFunc(OpCodes.Ceq, leftType, left.Value is Pointer, rightType, right.Value is Pointer);
+                bool result = (bool)func.Invoke(null, new object[] { leftValue, rightValue });
                 doJump = !result;
                 isBranch = true;
             }
@@ -1242,11 +1413,11 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
                 var instructions = mb.GetILInstructions();
 
-                List<object> parameters = new List<object>();
+                List<StackEntry> parameters = new List<StackEntry>();
                 foreach (var p in mb.GetParameters())
                 {
                     var paramValue = stack.Pop();
-                    parameters.Insert(0, paramValue.Value);
+                    parameters.Insert(0, paramValue);
                 }
 
                 object thisObject;
@@ -1262,12 +1433,17 @@ namespace RunTimeDebuggers.AssemblyExplorer
             return false;
         }
 
-        private void ExecuteMethod(MethodBase mb, List<ILInstruction> instructions, List<object> parameters, object thisObject, bool isCallVirt)
+        private void ExecuteMethod(MethodBase mb, List<ILInstruction> instructions, List<StackEntry> parameters, object thisObject, bool isCallVirt)
         {
+            var parametersOfMethod = mb.GetParameters();
+            var parameterObjects = parameters.Select((p, idx) => new Parameter() { Value = p.Value, Info = parametersOfMethod[idx] })
+                                             .ToArray();
+
             if (instructions != null && instructions.Count > 0 && !mb.IsUnsafe())
             {
                 try
                 {
+
                     // if it's a virtual method and the method is called by callvirt, evaluate the most overriden
                     // method first
                     if (mb.IsVirtual && mb is MethodInfo && isCallVirt)
@@ -1285,48 +1461,59 @@ namespace RunTimeDebuggers.AssemblyExplorer
                             curType = curType.BaseType;
                         }
 
-                        methodDebugger = new ILDebugger(correspondingMethodInType, thisObject, parameters.ToArray());
+
+                        methodDebugger = new ILDebugger(correspondingMethodInType, thisObject, parameterObjects);
                     }
                     else
-                        methodDebugger = new ILDebugger(mb, thisObject, parameters.ToArray());
+                        methodDebugger = new ILDebugger(mb, thisObject, parameterObjects);
 
                 }
                 catch (BadImageFormatException)
                 {
                     // some references in the method are not CLR compliant
                     // invoke with reflection
-                    ExecuteMethodWithReflection(mb, parameters, thisObject);
+                    ExecuteMethodWithReflection(mb, parameterObjects, thisObject);
                 }
             }
             else
             {
-                ExecuteMethodWithReflection(mb, parameters, thisObject);
+                ExecuteMethodWithReflection(mb, parameterObjects, thisObject);
             }
         }
 
-        private void ExecuteMethodWithReflection(MethodBase mb, List<object> parameters, object thisObject)
+        private void ExecuteMethodWithReflection(MethodBase mb, Parameter[] parameters, object thisObject)
         {
             var paramInfoOfMethod = mb.GetParameters();
             // in IL an int is a bool or char, but in c# this conversion will fail
-            object[] convertedParameters = new object[parameters.Count];
-            for (int i = 0; i < parameters.Count; i++)
+            object[] convertedParameters = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
             {
+                var value = parameters[i].Value;
+                if (parameters[i].Value is Pointer)
+                    value = ((Pointer)parameters[i].Value).Value;
+
                 if (paramInfoOfMethod[i].ParameterType == typeof(bool))
-                    convertedParameters[i] = Convert.ToBoolean(parameters[i]);
+                    convertedParameters[i] = Convert.ToBoolean(value);
                 else if (paramInfoOfMethod[i].ParameterType == typeof(char))
-                    convertedParameters[i] = Convert.ToChar(parameters[i]);
+                    convertedParameters[i] = Convert.ToChar(value);
                 else
-                    convertedParameters[i] = parameters[i];
+                    convertedParameters[i] = value;
             }
 
-            object value = mb.Invoke(mb.IsStatic ? null : thisObject, convertedParameters.ToArray());
+            object returnvalue = mb.Invoke(mb.IsStatic ? null : thisObject, convertedParameters);
             if (mb.GetReturnType() != typeof(void) && mb.GetReturnType() != null)
             {
                 stack.Push(new StackEntry()
                 {
                     Type = mb.GetReturnType(),
-                    Value = value
+                    Value = returnvalue
                 });
+            }
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i].Value is Pointer) // by ref
+                    ((Pointer)parameters[i].Value).Value = convertedParameters[i];
             }
         }
 
@@ -1344,11 +1531,11 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 var instructions = mb.GetILInstructions();
 
                 // pop parameters from stack
-                List<object> parameters = new List<object>();
+                List<StackEntry> parameters = new List<StackEntry>();
                 foreach (var p in mb.GetParameters())
                 {
                     var paramValue = stack.Pop();
-                    parameters.Insert(0, paramValue.Value);
+                    parameters.Insert(0, paramValue);
                 }
 
                 // push new obj on the stack
@@ -1642,11 +1829,67 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         public class StackEntry
         {
-            public object Value { get; set; }
+            public virtual object Value { get; set; }
             public Type Type { get; set; }
-            public bool ByRef { get; set; }
-
         }
+
+        public abstract class Pointer
+        {
+            private Func<object> getValue;
+            private Action<object> setValue;
+            public Pointer(Type t, Func<object> getValue, Action<object> setValue)
+            {
+                this.getValue = getValue;
+                this.setValue = setValue;
+                this.Type = t.MakePointerType();
+                this.OriginalType = t;
+            }
+
+            public object Value { get { return getValue(); } set { setValue(value); } }
+
+            public Type OriginalType { get; private set; }
+            public Type Type { get; private set; }
+
+            public override string ToString()
+            {
+                return this.GetType().Name + " -> " + (Value + "");
+            }
+        }
+
+        public class ArrayPointer : Pointer
+        {
+            public ArrayPointer(Array array, int elementIndex)
+                : base(array.GetType().GetElementType(), () => array.GetValue(elementIndex), val => array.SetValue(val, elementIndex))
+            {
+            }
+        }
+
+        public class ParameterPointer : Pointer
+        {
+            public ParameterPointer(Parameter p)
+                : base(p.Info.ParameterType, () => p.Value, val => p.Value = val)
+            {
+            }
+        }
+
+        public class LocalPointer : Pointer
+        {
+            public LocalPointer(Local l)
+                : base(l.Info.LocalType, () => l.Value, val => l.Value = val)
+            {
+            }
+        }
+
+        public class FieldPointer : Pointer
+        {
+            public FieldPointer(FieldInfo field, object instance)
+                : base(field.FieldType, () => field.GetValue(instance), val => field.SetValue(instance, val))
+            {
+            }
+        }
+
+
+
 
         public class ProtectedBlock
         {

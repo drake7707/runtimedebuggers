@@ -581,16 +581,22 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void mnuRunDebugger_Click(object sender, EventArgs e)
         {
-            if (ILDebugManager.Instance.Debugger != null)
+            try
             {
-                ILDebugManager.Instance.Run();
+                if (ILDebugManager.Instance.Debugger != null)
+                {
+                    ILDebugManager.Instance.Run();
 
-                UpdateGUIForDebugger();
+                    UpdateGUIForDebugger();
+                }
+                else
+                    MessageBox.Show("No active debugger present, evaluate a statement with Ctrl+Enter in the locals window to run it through the interpreter.");
+
             }
-            else
-                MessageBox.Show("No active debugger present, evaluate a statement with Ctrl+Enter in the locals window to run it through the interpreter.");
-
-            
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.GetType().FullName + " -  " + ex.Message + Environment.NewLine + ex.StackTrace);
+            }
         }
 
         private MethodBase oldMethod;
@@ -644,6 +650,12 @@ namespace RunTimeDebuggers.AssemblyExplorer
             var debuggerStackControl = new DebuggerStack(this);
             rightTabs.AddTab(debuggerStackControl, "Debugger stack");
             
+        }
+
+        private void debuggerLocalsArgumentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var debuggerStackControl = new DebuggerVariables(this);
+            rightTabs.AddTab(debuggerStackControl, "Debugger variables");
         }
 
         private void loadAliasesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -721,5 +733,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
                 dlg.ShowDialog(this);
             }
         }
+
+        
     }
 }

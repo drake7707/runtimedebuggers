@@ -200,6 +200,10 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     {
                         using (var bmp = Resources.breakpoint)
                             e.Graphics.DrawImage(bmp, new PointF(0, e.LineRect.Y));
+
+                        using (SolidBrush br = new SolidBrush(Color.FromArgb(171,97,107)))
+                            e.Graphics.FillRectangle(br, e.LineRect);
+                        
                     }
 
                     if (jumpedToOffset == ilOffset)

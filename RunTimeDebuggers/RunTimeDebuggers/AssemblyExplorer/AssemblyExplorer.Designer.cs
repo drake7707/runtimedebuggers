@@ -54,6 +54,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.debuggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debuggerStackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debuggerLocalsArgumentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.showOnlyAliasesWhenPresentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripSeparator();
@@ -282,7 +283,8 @@
             // debuggerToolStripMenuItem
             // 
             this.debuggerToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.debuggerStackToolStripMenuItem});
+            this.debuggerStackToolStripMenuItem,
+            this.debuggerLocalsArgumentsToolStripMenuItem});
             this.debuggerToolStripMenuItem.Name = "debuggerToolStripMenuItem";
             this.debuggerToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
             this.debuggerToolStripMenuItem.Text = "Debugger";
@@ -290,9 +292,16 @@
             // debuggerStackToolStripMenuItem
             // 
             this.debuggerStackToolStripMenuItem.Name = "debuggerStackToolStripMenuItem";
-            this.debuggerStackToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.debuggerStackToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
             this.debuggerStackToolStripMenuItem.Text = "Debugger stack";
             this.debuggerStackToolStripMenuItem.Click += new System.EventHandler(this.debuggerStackToolStripMenuItem_Click);
+            // 
+            // debuggerLocalsArgumentsToolStripMenuItem
+            // 
+            this.debuggerLocalsArgumentsToolStripMenuItem.Name = "debuggerLocalsArgumentsToolStripMenuItem";
+            this.debuggerLocalsArgumentsToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.debuggerLocalsArgumentsToolStripMenuItem.Text = "Debugger variables";
+            this.debuggerLocalsArgumentsToolStripMenuItem.Click += new System.EventHandler(this.debuggerLocalsArgumentsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -329,9 +338,9 @@
             // mnuRunDebugger
             // 
             this.mnuRunDebugger.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.mnuRunDebugger.Image = global::RunTimeDebuggers.Properties.Resources.debugger;
             this.mnuRunDebugger.ImageTransparentColor = System.Drawing.Color.White;
             this.mnuRunDebugger.Name = "mnuRunDebugger";
-            this.mnuRunDebugger.Image = global::RunTimeDebuggers.Properties.Resources.debugger;
             this.mnuRunDebugger.Size = new System.Drawing.Size(23, 22);
             this.mnuRunDebugger.Text = "Run interpreter (WIP)";
             this.mnuRunDebugger.Click += new System.EventHandler(this.mnuRunDebugger_Click);
@@ -339,9 +348,9 @@
             // mnuStepInto
             // 
             this.mnuStepInto.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.mnuStepInto.Image = global::RunTimeDebuggers.Properties.Resources.stepInto;
             this.mnuStepInto.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.mnuStepInto.Name = "mnuStepInto";
-            this.mnuStepInto.Image = global::RunTimeDebuggers.Properties.Resources.stepInto;
             this.mnuStepInto.Size = new System.Drawing.Size(23, 22);
             this.mnuStepInto.Text = "Step into next statement (WIP)";
             this.mnuStepInto.Click += new System.EventHandler(this.mnuStepInto_Click);
@@ -562,5 +571,6 @@
         private System.Windows.Forms.ToolStripMenuItem showOnlyAliasesWhenPresentToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
         private System.Windows.Forms.ToolStripMenuItem showFormsFlowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debuggerLocalsArgumentsToolStripMenuItem;
     }
 }

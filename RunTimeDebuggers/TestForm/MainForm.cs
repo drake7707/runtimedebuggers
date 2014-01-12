@@ -35,6 +35,8 @@ namespace TestForm
 
             DoSomethingWithEnum(TestEnum.AnEnumValue);
 
+            TestOps();
+
             //Dictionary<Type, int> testDic = new Dictionary<Type, int>();
             //testDic.Add(typeof(GenericClass2<>), 0);
             //testDic.Add(typeof(GenericClass2<MainForm>), 0);
@@ -99,6 +101,31 @@ namespace TestForm
         public string Method5<T>(T arg)
         {
             return "Method 5 value, type param=" + typeof(T).Name.ToString() + ", args=" + arg + " (" + DateTime.Now.ToString("HH:mm") + ")";
+        }
+
+        public void TestOps()
+        {
+            int resultAdd = TestAdd(2,3);
+            int resultSubtract = TestSubtract(10, 5);
+            int result;
+            TestAddWithOutResult(2, 3, out result);
+            if (result != resultAdd)
+                throw new Exception("Out didn't work well");
+        }
+
+        private int TestAdd(int x, int y)
+        {
+            return x + y;
+        }
+
+        private int TestSubtract(int x, int y)
+        {
+            return x - y;
+        }
+
+        private void TestAddWithOutResult(int x, int y, out int result)
+        {
+            result = x + y;
         }
 
         public DateTime CurrentTime { get { return DateTime.Now; } }
