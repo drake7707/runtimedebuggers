@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Text;
+using System.Runtime.ConstrainedExecution;
+using System.Security;
 
 namespace Injector
 {
@@ -52,6 +54,8 @@ namespace Injector
 
         public static bool Is64BitProcess(Process process)
         {
+            if (IntPtr.Size == 4) // injector is running in 32-bit, while compiled to AnyCpu. This means it's either forced to x86 or the it's a 32 bit OS. Not really sure if this will do
+                return false;
 
             bool isWow64Process;
             if (!IsWow64Process(process.Handle, out isWow64Process))
@@ -60,9 +64,35 @@ namespace Injector
             return !isWow64Process;
         }
 
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        // Microsoft.Win32.Win32Native
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+        [DllImport("kernel32.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string moduleName);
+
+        // Microsoft.Win32.Win32Native
+        [DllImport("kernel32.dll", BestFitMapping = false, CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string methodName);
+
+        // Microsoft.Win32.Win32Native
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern IntPtr GetCurrentProcess();
+
+        internal static bool DoesWin32MethodExist(string moduleName, string methodName)
+        {
+            IntPtr moduleHandle = GetModuleHandle(moduleName);
+            if (moduleHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+            IntPtr procAddress = GetProcAddress(moduleHandle, methodName);
+            return procAddress != IntPtr.Zero;
+        }
+
+
+        // Microsoft.Win32.Win32Native
+        [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsWow64Process([In] IntPtr processHandle, [Out, MarshalAs(UnmanagedType.Bool)] out bool wow64Process);
+        internal static extern bool IsWow64Process([In] IntPtr hSourceProcessHandle, [MarshalAs(UnmanagedType.Bool)] out bool isWow64);
 
         private delegate bool EnumWindowsCallBackDelegate(IntPtr hwnd, IntPtr lParam);
         [DllImport("user32.Dll")]
