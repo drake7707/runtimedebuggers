@@ -342,6 +342,10 @@ namespace RunTimeDebuggers.Helpers
                 {
                     blocks.Add(new ValueCodeBlock(instruction.Operand));
                 }
+                else
+                {
+                    blocks.Add(new ValueCodeBlock(instruction.Operand));
+                }
 
 
                 int paramIdx = -1;
@@ -587,7 +591,8 @@ namespace RunTimeDebuggers.Helpers
                 {
                     line += @"\cf3\" + "\"" + (instruction.Operand + "") + @"\cf0\" + "\"";
                 }
-
+                else
+                    line += @"\cf3\" + "\"" + (instruction.Operand + "") + @"\cf0\" + "\"";
 
                 int paramIdx = -1;
                 if (instruction.Code == OpCodes.Ldarg || instruction.Code == OpCodes.Ldarg_S ||

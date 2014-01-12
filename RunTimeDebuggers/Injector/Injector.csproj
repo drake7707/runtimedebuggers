@@ -93,6 +93,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RunTimeDebuggers\RunTimeDebuggers3.5x64.csproj">
+      <Project>{EAE3D2D1-28B6-4B80-ACC8-6A69452727A6}</Project>
+      <Name>RunTimeDebuggers3.5x64</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TestAssembly\TestAssembly.csproj">
       <Project>{FA1DA9DB-6F33-48AF-8720-54D40E667EF3}</Project>
       <Name>TestAssembly</Name>

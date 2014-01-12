@@ -92,6 +92,12 @@
     <Compile Include="AssemblyExplorer\Components\DebuggerStack.Designer.cs">
       <DependentUpon>DebuggerStack.cs</DependentUpon>
     </Compile>
+    <Compile Include="AssemblyExplorer\Components\DebuggerVariables.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AssemblyExplorer\Components\DebuggerVariables.Designer.cs">
+      <DependentUpon>DebuggerVariables.cs</DependentUpon>
+    </Compile>
     <Compile Include="AssemblyExplorer\Components\ILNodeDiagram.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -368,6 +374,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AssemblyExplorer\Components\DebuggerStack.resx">
       <DependentUpon>DebuggerStack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AssemblyExplorer\Components\DebuggerVariables.resx">
+      <DependentUpon>DebuggerVariables.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AssemblyExplorer\Components\DecryptStrings.resx">
       <DependentUpon>DecryptStrings.cs</DependentUpon>
