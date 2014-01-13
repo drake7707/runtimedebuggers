@@ -78,13 +78,13 @@ namespace RunTimeDebuggers.AssemblyExplorer
                     try
                     {
                         if (itm.Value == null)
-                            argumentsNode.Nodes.Add("null" + typeSuffix);
+                            argumentsNode.Nodes.Add(itm.Info.Name + "= " + "null" + typeSuffix);
                         else
-                            argumentsNode.Nodes.Add(itm.Value + typeSuffix);
+                            argumentsNode.Nodes.Add(itm.Info.Name + "= " + itm.Value + typeSuffix);
                     }
                     catch (Exception)
                     {
-                        argumentsNode.Nodes.Add("" + typeSuffix);
+                        argumentsNode.Nodes.Add(typeSuffix);
                     }
                 }
 

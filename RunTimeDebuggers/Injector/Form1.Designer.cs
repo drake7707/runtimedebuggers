@@ -31,7 +31,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.btnRefresh = new System.Windows.Forms.Button();
             this.btnInject = new System.Windows.Forms.Button();
-            this.btnTestAssemblyBrowser = new System.Windows.Forms.Button();
             this.grid = new System.Windows.Forms.DataGridView();
             this.Window = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Process = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -61,17 +60,6 @@
             this.btnInject.Text = "Inject";
             this.btnInject.UseVisualStyleBackColor = true;
             this.btnInject.Click += new System.EventHandler(this.btnInject_Click);
-            // 
-            // btnTestAssemblyBrowser
-            // 
-            this.btnTestAssemblyBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTestAssemblyBrowser.Location = new System.Drawing.Point(448, 479);
-            this.btnTestAssemblyBrowser.Name = "btnTestAssemblyBrowser";
-            this.btnTestAssemblyBrowser.Size = new System.Drawing.Size(144, 23);
-            this.btnTestAssemblyBrowser.TabIndex = 8;
-            this.btnTestAssemblyBrowser.Text = "Test assembly browser";
-            this.btnTestAssemblyBrowser.UseVisualStyleBackColor = true;
-            this.btnTestAssemblyBrowser.Click += new System.EventHandler(this.btnTestAssemblyExplorer_Click);
             // 
             // grid
             // 
@@ -135,7 +123,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(740, 509);
             this.Controls.Add(this.grid);
-            this.Controls.Add(this.btnTestAssemblyBrowser);
             this.Controls.Add(this.btnRefresh);
             this.Controls.Add(this.btnInject);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -150,7 +137,6 @@
 
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnInject;
-        private System.Windows.Forms.Button btnTestAssemblyBrowser;
         private System.Windows.Forms.DataGridView grid;
         private System.Windows.Forms.DataGridViewTextBoxColumn Window;
         private System.Windows.Forms.DataGridViewTextBoxColumn Process;

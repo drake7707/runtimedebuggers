@@ -11,6 +11,7 @@ namespace RunTimeDebuggers
 {
     public class Program
     {
+        [STAThread]
         public static void Main(string[] args)
         {
             if (args.Length >= 1)
@@ -57,34 +58,37 @@ namespace RunTimeDebuggers
                 }
             }
             else
-                MessageBox.Show("Invalid arguments, usage: " + Environment.GetCommandLineArgs()[0] + " <hwnd>");
+            {
+                MessageBox.Show("No hwnd specified, opening actions form on local assembly");
+                Initialize(true);
+            }
         }
 
         public static void InjectedMain()
         {
-            //ILDebugger debugger = new ILDebugger();
 
+            Initialize(false);
+        }
+
+        public static void Initialize(bool showActionsFormAsDialog)
+        {
             ConsoleDebugger.ConsoleDebugger.Instance.Initialize();
             // ensure missing assemblies are loaded
-            MissingAssemblyManager.Initialize(); 
+            MissingAssemblyManager.Initialize();
 
-
-            //var result = MessageBox.Show("Open the actions dialog as modal window? A modal window will retain the call stack to the message pump of the open window, but changes can't be made to the initial form.", "Open as modal dialog?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-            //if (result == DialogResult.Yes)
-            //{
-            //    using (ActionsForm dlg = new ActionsForm())
-            //    {
-            //        dlg.ShowDialog();
-            //    }
-            //}
-            //else
-            //{
+            if (showActionsFormAsDialog)
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new ActionsForm());
+                
+            }
+            else
+            {
                 ActionsForm dlg = new ActionsForm();
                 dlg.Show();
                 dlg.FormClosed += (s, ev) => dlg.Dispose();
-
-                
-            //}
+            }
         }
     }
 }

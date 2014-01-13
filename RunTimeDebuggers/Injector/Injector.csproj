@@ -93,16 +93,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TestAssembly\TestAssembly.csproj">
-      <Project>{FA1DA9DB-6F33-48AF-8720-54D40E667EF3}</Project>
-      <Name>TestAssembly</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TestForm\TestForm.csproj">
-      <Project>{4E89A0C5-A726-44CF-A145-99F8C9D94353}</Project>
-      <Name>TestForm</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="injection.ico" />
     <Content Include="ManagedInjector_clr20x64.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
