@@ -190,19 +190,5 @@ namespace Injector
             runtimeDebuggerDll = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), runtimeDebuggerDll);
             return runtimeDebuggerDll;
         }
-
-        private void btnTestAssemblyExplorer_Click(object sender, EventArgs e)
-        {
-            // ensure test assembly is loaded
-            TestForm.MainForm frm = new TestForm.MainForm();
-            frm.Show();
-
-            //RunTimeDebuggers.Program.InjectedMain();
-            // invoke injector on own process
-            string runtimeDebuggerDll = GetRuntimeDebuggerAssemblyLocation(IntPtr.Size == 8 ? true : false, Environment.Version.Major == 4 ? CLRVersion.v4_0 : CLRVersion.v2_0);
-            Assembly ass = Assembly.LoadFile(runtimeDebuggerDll);
-            ass.GetType("RunTimeDebuggers.Program").GetMethod("InjectedMain", BindingFlags.Static | BindingFlags.Public).Invoke(null, null);
-
-        }
     }
 }
