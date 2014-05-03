@@ -176,7 +176,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ActionsForm";
-            this.Text = "Runtime Debugger Actions  - By drake7707";
+            this.Text = "Runtime Debugger Actions ";
             this.groupBox1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();

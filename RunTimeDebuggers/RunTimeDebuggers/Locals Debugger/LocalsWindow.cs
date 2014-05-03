@@ -30,7 +30,7 @@ namespace RunTimeDebuggers.LocalsDebugger
 
             InitializeComponent();
 
-            if(!string.IsNullOrEmpty(thisName))
+            if (!string.IsNullOrEmpty(thisName))
                 Text = "Locals & Watches - " + thisName;
 
             tree.Columns.Add(new TreeListColumn("Name", "Name") { AutoSize = true });
@@ -383,7 +383,35 @@ namespace RunTimeDebuggers.LocalsDebugger
                 Control c = (Control)thisObject;
                 tvControlTree.Nodes.AddRange(GetNodesFromControls(c.Controls).ToArray());
             }
+            else if (thisObject is System.Windows.FrameworkElement)
+            {
+                System.Windows.FrameworkElement c = (System.Windows.FrameworkElement)thisObject;
+                var node = GetNodeFromControls(c);
+                if (node != null)
+                    tvControlTree.Nodes.Add(node);
+            }
             tvControlTree.ExpandAll();
+        }
+
+        private TreeNode GetNodeFromControls(System.Windows.DependencyObject obj)
+        {
+            if (obj is System.Windows.FrameworkElement)
+            {
+                var node = new ControlTreeNode((System.Windows.FrameworkElement)obj);
+
+                var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(obj);
+                for (int i = 0; i < childCount; i++)
+                {
+                    var child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
+                    var subNode = GetNodeFromControls(child);
+                    if (subNode != null)
+                        node.Nodes.Add(subNode);
+                }
+                return node;
+            }
+            else
+                return null;
+
         }
 
         private IEnumerable<TreeNode> GetNodesFromControls(Control.ControlCollection cc)
@@ -398,10 +426,10 @@ namespace RunTimeDebuggers.LocalsDebugger
                 if (c is ToolStrip)
                 {
                     foreach (TreeNode subc in GetNodesFromToolStrip(((ToolStrip)c).Items))
-                    node.Nodes.Add(subc);
-                    
+                        node.Nodes.Add(subc);
+
                 }
-                    
+
                 yield return node;
             }
         }
@@ -410,7 +438,7 @@ namespace RunTimeDebuggers.LocalsDebugger
         {
             foreach (ToolStripItem itm in toolStripItemCollection)
             {
-                var node =new ControlTreeNode(itm);
+                var node = new ControlTreeNode(itm);
                 if (itm is ToolStripDropDownItem)
                 {
                     foreach (TreeNode subc in GetNodesFromToolStrip(((ToolStripDropDownItem)itm).DropDownItems))
@@ -575,7 +603,7 @@ namespace RunTimeDebuggers.LocalsDebugger
             }
         }
 
-        
+
 
     }
 }

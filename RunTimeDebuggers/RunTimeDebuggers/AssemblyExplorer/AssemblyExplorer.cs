@@ -146,7 +146,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
         protected override void OnClosed(EventArgs e)
         {
             AliasManager.Instance.AliasChanged -= new AliasManager.AliasChangedHandler(AliasManager_AliasChanged);
-            ILDebugManager.Instance.DebuggerChanged-=new EventHandler(ILDebugManager_DebuggerChanged);
+            ILDebugManager.Instance.DebuggerChanged -= new EventHandler(ILDebugManager_DebuggerChanged);
             ILDebugManager.Instance.BreakpointHit -= new EventHandler(ILDebugManager_BreakpointHit);
 
 
@@ -174,7 +174,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
         {
             if (t == null)
                 return;
-            
+
             var assemblyNode = GetNodes().Where(n => n is AssemblyNode && ((AssemblyNode)n).Assembly == t.Assembly).FirstOrDefault();
             if (assemblyNode == null)
                 return;
@@ -227,7 +227,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
         {
             Type t = member.DeclaringType;
 
-            
+
             if (t == null)
                 System.Diagnostics.Debug.Assert(t != null, "Declaring type is null");
 
@@ -291,7 +291,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             memberNode.EnsureVisible();
 
             tvNodes.SelectedNode = memberNode;
-            if(offset != -1)
+            if (offset != -1)
                 codePane.ScrollToInstruction(offset);
         }
 
@@ -577,7 +577,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             btnForward_Click(btnForward, EventArgs.Empty);
         }
 
-       
+
 
         private void mnuRunDebugger_Click(object sender, EventArgs e)
         {
@@ -604,14 +604,21 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void mnuStepInto_Click(object sender, EventArgs e)
         {
-            if (ILDebugManager.Instance.Debugger != null)
+            try
             {
-                ILDebugManager.Instance.StepInto();
+                if (ILDebugManager.Instance.Debugger != null)
+                {
+                    ILDebugManager.Instance.StepInto();
 
-                UpdateGUIForDebugger();
+                    UpdateGUIForDebugger();
+                }
+                else
+                    MessageBox.Show("No active debugger present, evaluate a statement with Ctrl+Enter in the locals window to run it through the interpreter.");
             }
-            else
-                MessageBox.Show("No active debugger present, evaluate a statement with Ctrl+Enter in the locals window to run it through the interpreter.");
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.GetType().FullName + " -  " + ex.Message + Environment.NewLine + ex.StackTrace);
+            }
         }
 
         private void UpdateGUIForDebugger()
@@ -649,7 +656,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
         {
             var debuggerStackControl = new DebuggerStack(this);
             rightTabs.AddTab(debuggerStackControl, "Debugger stack");
-            
+
         }
 
         private void debuggerLocalsArgumentsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -660,7 +667,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void loadAliasesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd =new OpenFileDialog())
+            using (OpenFileDialog ofd = new OpenFileDialog())
             {
                 ofd.Filter = "*.xml|*.xml";
                 if (ofd.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
@@ -672,7 +679,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
         private void saveAliasesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (SaveFileDialog sfd =  new SaveFileDialog())
+            using (SaveFileDialog sfd = new SaveFileDialog())
             {
                 sfd.Filter = "*.xml|*.xml";
                 if (sfd.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
@@ -705,7 +712,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             }
         }
 
-     
+
         public void SetStatusText(string str)
         {
             lblStatus.Text = str;
@@ -734,6 +741,6 @@ namespace RunTimeDebuggers.AssemblyExplorer
             }
         }
 
-        
+
     }
 }
