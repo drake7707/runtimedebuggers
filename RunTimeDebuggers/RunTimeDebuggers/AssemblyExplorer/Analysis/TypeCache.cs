@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using RunTimeDebuggers.Helpers;
 
 namespace RunTimeDebuggers.AssemblyExplorer
 {

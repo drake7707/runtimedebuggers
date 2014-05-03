@@ -52,11 +52,14 @@ namespace RunTimeDebuggers.LocalsDebugger
             this.openValueAsMemberInAssemblyExploreToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.changeAliasOfMemberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tmrMouseOver = new System.Windows.Forms.Timer(this.components);
             this.toolStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitVert)).BeginInit();
             this.splitVert.Panel1.SuspendLayout();
             this.splitVert.Panel2.SuspendLayout();
             this.splitVert.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -371,6 +374,11 @@ namespace RunTimeDebuggers.LocalsDebugger
             this.changeAliasOfMemberToolStripMenuItem.Text = "Change alias of member";
             this.changeAliasOfMemberToolStripMenuItem.Click += new System.EventHandler(this.changeAliasOfMemberToolStripMenuItem_Click);
             // 
+            // tmrMouseOver
+            // 
+            this.tmrMouseOver.Enabled = true;
+            this.tmrMouseOver.Tick += new System.EventHandler(this.tmrMouseOver_Tick);
+            // 
             // LocalsWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -387,9 +395,11 @@ namespace RunTimeDebuggers.LocalsDebugger
             this.tableLayoutPanel1.PerformLayout();
             this.splitVert.Panel1.ResumeLayout(false);
             this.splitVert.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitVert)).EndInit();
             this.splitVert.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
@@ -434,5 +444,6 @@ namespace RunTimeDebuggers.LocalsDebugger
         private NavigatableTreeView tvControlTree;
         private System.Windows.Forms.ContextMenuStrip mnuLookupInLocals;
         private System.Windows.Forms.ToolStripMenuItem openValueInNewLocalsWatchesWindowToolStripControlTreeMenuItem;
+        private System.Windows.Forms.Timer tmrMouseOver;
     }
 }

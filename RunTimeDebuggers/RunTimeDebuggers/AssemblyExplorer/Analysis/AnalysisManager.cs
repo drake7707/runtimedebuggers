@@ -410,13 +410,4 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
 
     }
-
-    static class Extensions
-    {
-        public static void AddRange<T>(this HashSet<T> h, IEnumerable<T> objs)
-        {
-            foreach (var o in objs)
-                h.Add(o);
-        }
-    }
 }
