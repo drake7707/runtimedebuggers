@@ -48,13 +48,18 @@ namespace RunTimeDebuggers
                 foreach (var frm in System.Windows.Application.Current.Windows)
                     lstOpenForms.Items.Add(new WPFFormItem(frm));
 
-
-                lstOpenForms.EndUpdate();
             }
             catch (Exception)
             {
 
             }
+            finally
+            {
+                lstOpenForms.EndUpdate();
+            }
+
+            if (lstOpenForms.Items.Count > 0)
+                lstOpenForms.SelectedIndex = 0;
         }
 
         private abstract class FormItem

@@ -24,6 +24,8 @@ namespace RunTimeDebuggers.LocalsDebugger
 
         private MemberNode rootNode;
 
+
+
         public LocalsWindow(string thisName, object obj)
         {
             this.thisObject = obj;
@@ -484,29 +486,28 @@ namespace RunTimeDebuggers.LocalsDebugger
         {
             if (propGrid.SelectedObject is Control)
                 PrepareRectangleAndShowBounds((Control)propGrid.SelectedObject);
+            else if (propGrid.SelectedObject is System.Windows.FrameworkElement)
+                PrepareRectangleAndShowBounds((System.Windows.FrameworkElement)propGrid.SelectedObject);
         }
 
-        private Panel[] controlHighlightRectangle = new Panel[] {
+        private Form[] controlHighlightRectangle = new Form[] {
         
-            new Panel() { BackColor = Color.Red },
-            new Panel() { BackColor = Color.Red },
-            new Panel() { BackColor = Color.Red },
-            new Panel() { BackColor = Color.Red }
+            new Form() { BackColor = Color.Red, FormBorderStyle = FormBorderStyle.None, TopMost = true, ShowInTaskbar = false },
+            new Form() { BackColor = Color.Red, FormBorderStyle = FormBorderStyle.None, TopMost = true, ShowInTaskbar = false },
+            new Form() { BackColor = Color.Red, FormBorderStyle = FormBorderStyle.None, TopMost = true, ShowInTaskbar = false },
+            new Form() { BackColor = Color.Red, FormBorderStyle = FormBorderStyle.None, TopMost = true, ShowInTaskbar = false }
         };
-
-        private Control controlHighlightRectangleContainer;
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
 
-            if (controlHighlightRectangleContainer != null && !controlHighlightRectangleContainer.IsDisposed)
-            {
-                controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[0]);
-                controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[1]);
-                controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[2]);
-                controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[3]);
-            }
+            controlHighlightRectangle[0].Close();
+            controlHighlightRectangle[1].Close();
+            controlHighlightRectangle[2].Close();
+            controlHighlightRectangle[3].Close();
+
+
         }
 
         /// <summary>
@@ -526,80 +527,100 @@ namespace RunTimeDebuggers.LocalsDebugger
             base.Dispose(disposing);
         }
 
-
-        private void PrepareRectangleAndShowBounds(Control c)
+        private void PrepareRectangleAndShowBounds(object c)
         {
             try
             {
-                if (controlHighlightRectangleContainer != null && !controlHighlightRectangleContainer.IsDisposed)
-                {
-                    controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[0]);
-                    controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[1]);
-                    controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[2]);
-                    controlHighlightRectangleContainer.Controls.Remove(controlHighlightRectangle[3]);
-                }
+                propGrid.SelectedObject = c;
 
-                if (!c.IsDisposed && !c.Disposing)
-                {
-                    propGrid.SelectedObject = c;
+                controlHighlightRectangle[0].Show();
+                controlHighlightRectangle[1].Show();
+                controlHighlightRectangle[2].Show();
+                controlHighlightRectangle[3].Show();
 
-                    var topLevelControl = c.TopLevelControl;
-                    if (topLevelControl != null)
-                    {
-                        topLevelControl.Controls.Add(controlHighlightRectangle[0]);
-                        topLevelControl.Controls.Add(controlHighlightRectangle[1]);
-                        topLevelControl.Controls.Add(controlHighlightRectangle[2]);
-                        topLevelControl.Controls.Add(controlHighlightRectangle[3]);
-
-                        controlHighlightRectangle[0].Visible = true;
-                        controlHighlightRectangle[1].Visible = true;
-                        controlHighlightRectangle[2].Visible = true;
-                        controlHighlightRectangle[3].Visible = true;
-                        controlHighlightRectangle[0].BringToFront();
-                        controlHighlightRectangle[1].BringToFront();
-                        controlHighlightRectangle[2].BringToFront();
-                        controlHighlightRectangle[3].BringToFront();
-                    }
-
-                    SetBoundsFromControl(c, 2);
-
-                    controlHighlightRectangleContainer = topLevelControl;
-                }
+                controlHighlightRectangle[0].BringToFront();
+                controlHighlightRectangle[1].BringToFront();
+                controlHighlightRectangle[2].BringToFront();
+                controlHighlightRectangle[3].BringToFront();
+                if (c is Control)
+                    SetBoundsHighlight(GetBoundsFromControl((Control)c), 2);
+                else if (c is System.Windows.FrameworkElement)
+                    SetBoundsHighlight(GetBoundsFromControl((System.Windows.FrameworkElement)c), 2);
             }
             catch (Exception)
             {
-
             }
         }
 
-        private void SetBoundsFromControl(Control c, int borderWidth)
+
+        private void SetBoundsHighlight(Rectangle bounds, int borderWidth)
         {
-            var topLevelControl = c.TopLevelControl;
+            // top
+            controlHighlightRectangle[0].Location = new Point(bounds.Left, bounds.Top);
+            controlHighlightRectangle[0].Size = new Size(bounds.Width, borderWidth);
 
-            if (topLevelControl != null)
+            // left
+            controlHighlightRectangle[1].Location = new Point(bounds.Left, bounds.Top);
+            controlHighlightRectangle[1].Size = new Size(borderWidth, bounds.Height);
+
+            // bottom
+            controlHighlightRectangle[2].Location = new Point(bounds.Left, bounds.Top + bounds.Height - borderWidth);
+            controlHighlightRectangle[2].Size = new Size(bounds.Width, borderWidth);
+
+            // right
+            controlHighlightRectangle[3].Location = new Point(bounds.Left + bounds.Width - borderWidth, bounds.Top);
+            controlHighlightRectangle[3].Size = new Size(borderWidth, bounds.Height);
+
+        }
+
+        private static Rectangle GetBoundsFromControl(Control c)
+        {
+            Rectangle bounds = new Rectangle(
+                c.PointToScreen(new Point(0, 0)).X,
+                c.PointToScreen(new Point(0, 0)).Y,
+                c.Width,
+                c.Height
+            );
+            return bounds;
+        }
+
+        private static Rectangle GetBoundsFromControl(System.Windows.FrameworkElement c)
+        {
+            Rectangle bounds = new Rectangle(
+                (int)c.PointToScreen(new System.Windows.Point(0, 0)).X,
+                (int)c.PointToScreen(new System.Windows.Point(0, 0)).Y,
+                (int)c.ActualWidth,
+                (int)c.ActualHeight
+            );
+            return bounds;
+        }
+
+        private void tmrMouseOver_Tick(object sender, EventArgs e)
+        {
+            if ((Control.ModifierKeys & Keys.Control) == Keys.Control &&
+                (Control.ModifierKeys & Keys.Shift) == Keys.Shift)
             {
-                Rectangle controlAreaRelativeToTopLevel = new Rectangle(
-                    c.PointToScreen(new Point(0, 0)).X - topLevelControl.PointToScreen(new Point(0, 0)).X,
-                    c.PointToScreen(new Point(0, 0)).Y - topLevelControl.PointToScreen(new Point(0, 0)).Y,
-                    c.Width,
-                    c.Height
-                );
+                foreach (var node in tvControlTree.GetAllNodes().Cast<ControlTreeNode>().Where(n => n.Nodes.Count == 0)) // all leaves
+                {
+                    Rectangle r = Rectangle.Empty;
+                    if (node.Object is Control)
+                        r = GetBoundsFromControl((Control)node.Object);
+                    else if (node.Object is System.Windows.FrameworkElement)
+                        r = GetBoundsFromControl((System.Windows.FrameworkElement)node.Object);
 
-                // top
-                controlHighlightRectangle[0].Location = new Point(controlAreaRelativeToTopLevel.Left, controlAreaRelativeToTopLevel.Top);
-                controlHighlightRectangle[0].Size = new Size(c.Width, borderWidth);
+                    if (r != Rectangle.Empty)
+                    {
+                        if (r.Contains(Control.MousePosition))
+                        {
+                            propGrid.SelectedObject = node.Object;
+                            propGrid_SelectedObjectsChanged(propGrid, EventArgs.Empty);
+                            tvControlTree.SelectedNode = node;
+                            tvControlTree.SelectedNode.EnsureVisible();
+                            return;
+                        }
+                    }
+                }
 
-                // left
-                controlHighlightRectangle[1].Location = new Point(controlAreaRelativeToTopLevel.Left, controlAreaRelativeToTopLevel.Top);
-                controlHighlightRectangle[1].Size = new Size(borderWidth, c.Height);
-
-                // bottom
-                controlHighlightRectangle[2].Location = new Point(controlAreaRelativeToTopLevel.Left, controlAreaRelativeToTopLevel.Top + c.Height - borderWidth);
-                controlHighlightRectangle[2].Size = new Size(c.Width, borderWidth);
-
-                // right
-                controlHighlightRectangle[3].Location = new Point(controlAreaRelativeToTopLevel.Left + c.Width - borderWidth, controlAreaRelativeToTopLevel.Top);
-                controlHighlightRectangle[3].Size = new Size(borderWidth, c.Height);
             }
         }
 

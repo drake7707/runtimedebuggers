@@ -296,6 +296,7 @@
     <Compile Include="Helpers\AliasManager.cs" />
     <Compile Include="Helpers\BookmarkManager.cs" />
     <Compile Include="Helpers\BreakpointManager.cs" />
+    <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\StreamHelper.cs" />
     <Compile Include="Helpers\TaskFactory.cs" />
     <Compile Include="AssemblyExplorer\Nodes\Type\TypeNode.cs" />
