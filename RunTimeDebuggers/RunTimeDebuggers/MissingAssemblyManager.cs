@@ -27,46 +27,73 @@ namespace RunTimeDebuggers
             return ResolveAssembly(args);
         }
 
+        private static HashSet<string> ignoredAssemblies = new HashSet<string>();
+
+        private static bool ignoreResolve;
+        private static object ignoreResolveLock = new object();
+        public static bool IgnoreResolve
+        {
+            get { lock (ignoreResolveLock) return MissingAssemblyManager.ignoreResolve; }
+            set { lock (ignoreResolveLock) MissingAssemblyManager.ignoreResolve = value; }
+        }
 
         private static Assembly ResolveAssembly(ResolveEventArgs args)
         {
-            if (args.Name.Contains(".resources"))
+            if (IgnoreResolve)
                 return null;
 
-            if (args.Name.Contains("NodeControl"))
-            {
-                var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("RunTimeDebuggers.Assemblies.NodeControl.dll");
-                byte[] bytes = stream.ReadToEnd();
-                
-                    return Assembly.Load(bytes);
-                
-            }
 
-            var result = MessageBox.Show("Unable to load '" + args.Name + "', do you want to select the required file manually?", "Locate assembly", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-            if (result == DialogResult.Yes)
+            IgnoreResolve = true;
+            try
             {
-                using (OpenFileDialog ofd = new OpenFileDialog())
+                if (args.Name.Contains(".resources"))
+                    return null;
+
+                if (args.Name.Contains("NodeControl"))
                 {
-                    ofd.Title = "Open assembly '" + args.Name + "'";
-                    ofd.Filter = "*.dll;*.exe|*.dll;*.exe";
-                    if (ofd.ShowDialog() == DialogResult.OK)
+                    var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("RunTimeDebuggers.Assemblies.NodeControl.dll");
+                    byte[] bytes = stream.ReadToEnd();
+
+                    return Assembly.Load(bytes);
+
+                }
+
+                if (ignoredAssemblies.Contains(args.Name)) // don't ask multiple times for the same assembly
+                    return null;
+
+                var result = MessageBox.Show("Unable to load '" + args.Name + "', do you want to select the required file manually?", "Locate assembly", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+                if (result == DialogResult.Yes)
+                {
+                    using (OpenFileDialog ofd = new OpenFileDialog())
                     {
-                        try
+                        ofd.Title = "Open assembly '" + args.Name + "'";
+                        ofd.Filter = "*.dll;*.exe|*.dll;*.exe";
+                        if (ofd.ShowDialog() == DialogResult.OK)
                         {
-                            return Assembly.LoadFile(ofd.FileName);
+                            try
+                            {
+                                return Assembly.LoadFile(ofd.FileName);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Unable to load assembly: " + ex.GetType().FullName + " - " + ex.Message);
+                                return null;
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("Unable to load assembly: " + ex.GetType().FullName + " - " + ex.Message);
+                        else
                             return null;
-                        }
                     }
-                    else
-                        return null;
+                }
+                else
+                {
+                    ignoredAssemblies.Add(args.Name);
+                    return null;
                 }
             }
-            else
-                return null;
+            finally
+            {
+                IgnoreResolve = false;
+            }
         }
     }
 }

@@ -436,6 +436,56 @@ namespace RunTimeDebuggers.Helpers
                         }
                     }
                 }
+
+                else if (instance is System.Windows.UIElement)
+                {
+                    var c = (System.Windows.UIElement)instance;
+
+                    var evStore = c.GetType().GetProperty("EventHandlersStore", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                                             .GetValue(c, null);
+
+                    if (evStore != null)
+                    {
+                        MethodInfo getRoutedEventHandlers = evStore.GetType().GetMethod("GetRoutedEventHandlers", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        MethodInfo addMethod = ev.GetAddMethod();
+                        while (addMethod != null)
+                        {
+                            var instructions = addMethod.GetILInstructions();
+                            FieldInfo eventFieldKey = null;
+
+                            // ClickEvent, SubmenuClosedEvent, etc..
+                            eventFieldKey = instructions.Where(i => i.Code == OpCodes.Ldsfld && ((FieldInfo)i.Operand).Name.ToLower().EndsWith("event"))
+                                                  .Select(i => (FieldInfo)i.Operand)
+                                                  .FirstOrDefault();
+                            
+                            if (eventFieldKey != null)
+                            {
+                                System.Windows.RoutedEvent re = (System.Windows.RoutedEvent)eventFieldKey.GetValue(null);
+
+                                var eventhandlers = (System.Windows.RoutedEventHandlerInfo[])getRoutedEventHandlers.Invoke(evStore, new object[] { re });
+
+                                List<MethodInfo> methods = new List<MethodInfo>();
+                                foreach (var evhandler in eventhandlers)
+                                {
+                                    Delegate d = evhandler.Handler;
+                                    if (d != null)
+                                        methods.Add(d.Method);
+                                }
+                                return methods;
+                            }
+                            else
+                            {
+                                // it's possible that it's defined in base.addMethod
+                                // go look for the base call
+                                var baseMethod = instructions.Where(i => i.Code == OpCodes.Call && ((MethodInfo)i.Operand).Name == addMethod.Name)
+                                                                                               .Select(i => (MethodInfo)i.Operand)
+                                                                                               .FirstOrDefault();
+                                addMethod = baseMethod;
+                            }
+                        }
+                    }
+                }
             }
 
             throw new Exception("Unable to evaluate event, custom event wiring is used");
@@ -527,7 +577,7 @@ namespace RunTimeDebuggers.Helpers
             return false;
         }
 
-         /// <summary>
+        /// <summary>
         /// Casts the given object to the given type
         /// </summary>
         /// <param name="t">The type to cast the object to</param>
@@ -942,7 +992,7 @@ namespace RunTimeDebuggers.Helpers
                 //Disassembler dis = new Disassembler(ctor);
 
             }
-            
+
             List<CustomAttributeNamedArgument> namedArguments = new List<CustomAttributeNamedArgument>();
             foreach (var f in secAttr.GetType().GetFieldsOfType(true, false).Where(fld => fld.IsPublic))
             {

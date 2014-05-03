@@ -1,13 +1,20 @@
 ﻿Public Class Class1
 
 
-    Public Sub TestWithExceptionFilter()
+    Public Shared Sub TestWithExceptionFilter()
 
         Try
-            Console.WriteLine("foo")
+            WriteText("Try")
 
-        Catch ex As Exception When DateTime.Now.Second Mod 2 = 0
-            Console.WriteLine("meh")
+        Catch ex As Exception When WriteText("Filter")
+            WriteText("Catch")
+        Finally
+            WriteText("Finally")
         End Try
     End Sub
+
+    Public Shared Function WriteText(text As String) As Boolean
+        Return True
+
+    End Function
 End Class

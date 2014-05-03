@@ -39,6 +39,9 @@ namespace RunTimeDebuggers.LocalsDebugger
             else if (control is ToolStripItem)
                 return ((ToolStripItem)control).Name;
 
+            else if (control is System.Windows.FrameworkElement)
+                return ((System.Windows.FrameworkElement)control).Name;
+
 
             return "";
         }

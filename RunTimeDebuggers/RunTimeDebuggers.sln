@@ -19,9 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunTimeDebuggers3.5x86", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunTimeDebuggers4.0x86", "RunTimeDebuggers\RunTimeDebuggers4.0x86.csproj", "{42B54809-AE3E-4354-819C-F38C6A6FA1CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWpf", "TestWpf\TestWpf.csproj", "{32CD745D-8B1A-482A-B71E-EBABE43495AF}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 10
+		SccNumberOfProjects = 11
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs29
 		SccLocalPath0 = .
@@ -52,6 +54,9 @@ Global
 		SccProjectUniqueName9 = TestForm\\TestForm.csproj
 		SccProjectName9 = TestForm
 		SccLocalPath9 = TestForm
+		SccProjectUniqueName10 = TestWpf\\TestWpf.csproj
+		SccProjectName10 = TestWpf
+		SccLocalPath10 = TestWpf
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +200,20 @@ Global
 		{42B54809-AE3E-4354-819C-F38C6A6FA1CA}.Release|Win32.ActiveCfg = Release|Any CPU
 		{42B54809-AE3E-4354-819C-F38C6A6FA1CA}.Release|x64.ActiveCfg = Release|Any CPU
 		{42B54809-AE3E-4354-819C-F38C6A6FA1CA}.Release|x86.ActiveCfg = Release|Any CPU
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|Win32.ActiveCfg = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|x64.ActiveCfg = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|x86.ActiveCfg = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Debug|x86.Build.0 = Debug|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|Any CPU.ActiveCfg = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|Mixed Platforms.Build.0 = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|Win32.ActiveCfg = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|x64.ActiveCfg = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|x86.ActiveCfg = Release|x86
+		{32CD745D-8B1A-482A-B71E-EBABE43495AF}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

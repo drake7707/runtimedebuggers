@@ -47,14 +47,18 @@
       <HintPath>..\Lib\NodeControl.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionsForm.cs">
@@ -92,7 +96,9 @@
     <Compile Include="AssemblyExplorer\Components\DebuggerStack.Designer.cs">
       <DependentUpon>DebuggerStack.cs</DependentUpon>
     </Compile>
-    <Compile Include="AssemblyExplorer\Components\DebuggerVariables.cs" />
+    <Compile Include="AssemblyExplorer\Components\DebuggerVariables.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="AssemblyExplorer\Components\DebuggerVariables.Designer.cs">
       <DependentUpon>DebuggerVariables.cs</DependentUpon>
     </Compile>
@@ -207,29 +213,43 @@
     <Compile Include="Console Debugger\ConsoleWriter.cs" />
     <Compile Include="Console Debugger\DebugWriter.cs" />
     <Compile Include="Console Debugger\TraceWriter.cs" />
-    <Compile Include="Controls\CodeTextBox.cs" />
+    <Compile Include="Controls\CodeTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\AutocompleteItem.cs" />
-    <Compile Include="Controls\FastColoredTextBox\AutocompleteMenu.cs" />
+    <Compile Include="Controls\FastColoredTextBox\AutocompleteMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\Bookmarks.cs" />
     <Compile Include="Controls\FastColoredTextBox\Char.cs" />
     <Compile Include="Controls\FastColoredTextBox\CommandManager.cs" />
     <Compile Include="Controls\FastColoredTextBox\Commands.cs" />
-    <Compile Include="Controls\FastColoredTextBox\DocumentMap.cs" />
+    <Compile Include="Controls\FastColoredTextBox\DocumentMap.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\ExportToHTML.cs" />
     <Compile Include="Controls\FastColoredTextBox\ExportToRTF.cs" />
-    <Compile Include="Controls\FastColoredTextBox\FastColoredTextBox.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FastColoredTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\FileTextSource.cs" />
-    <Compile Include="Controls\FastColoredTextBox\FindForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\FindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\FindForm.Designer.cs">
       <DependentUpon>FindForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\FastColoredTextBox\GoToForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\GoToForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\GoToForm.Designer.cs">
       <DependentUpon>GoToForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\FastColoredTextBox\Hints.cs" />
     <Compile Include="Controls\FastColoredTextBox\Hotkeys.cs" />
-    <Compile Include="Controls\FastColoredTextBox\HotkeysEditorForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\HotkeysEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\HotkeysEditorForm.Designer.cs">
       <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
     </Compile>
@@ -240,11 +260,15 @@
     <Compile Include="Controls\FastColoredTextBox\Place.cs" />
     <Compile Include="Controls\FastColoredTextBox\PlatformType.cs" />
     <Compile Include="Controls\FastColoredTextBox\Range.cs" />
-    <Compile Include="Controls\FastColoredTextBox\ReplaceForm.cs" />
+    <Compile Include="Controls\FastColoredTextBox\ReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\ReplaceForm.Designer.cs">
       <DependentUpon>ReplaceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\FastColoredTextBox\Ruler.cs" />
+    <Compile Include="Controls\FastColoredTextBox\Ruler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\Ruler.Designer.cs">
       <DependentUpon>Ruler.cs</DependentUpon>
     </Compile>
@@ -253,7 +277,9 @@
     <Compile Include="Controls\FastColoredTextBox\SyntaxHighlighter.cs" />
     <Compile Include="Controls\FastColoredTextBox\TextSource.cs" />
     <Compile Include="Controls\FastColoredTextBox\TypeDescriptor.cs" />
-    <Compile Include="Controls\FastColoredTextBox\UnfocusablePanel.cs" />
+    <Compile Include="Controls\FastColoredTextBox\UnfocusablePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\FastColoredTextBox\VisualMarker.cs" />
     <Compile Include="Controls\GraphExplorer.cs">
       <SubType>Component</SubType>

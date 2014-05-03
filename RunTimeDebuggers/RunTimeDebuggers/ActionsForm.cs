@@ -15,12 +15,13 @@ namespace RunTimeDebuggers
 
         public ActionsForm()
         {
+            MissingAssemblyManager.Initialize();
 
             InitializeComponent();
 
             lblExecutionPlace.Text = "Executing in process: " + System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 
-            this.Text = "Actions for " + System.Diagnostics.Process.GetCurrentProcess().ProcessName + " - created by drake7707";
+            this.Text = "Actions for " + System.Diagnostics.Process.GetCurrentProcess().ProcessName;
 
 
             FillForms();
@@ -42,7 +43,11 @@ namespace RunTimeDebuggers
 
                 lstOpenForms.BeginUpdate();
                 foreach (Form frm in Application.OpenForms)
-                    lstOpenForms.Items.Add(new FormItem(frm));
+                    lstOpenForms.Items.Add(new WinFormsFormItem(frm));
+
+                foreach (var frm in System.Windows.Application.Current.Windows)
+                    lstOpenForms.Items.Add(new WPFFormItem(frm));
+
 
                 lstOpenForms.EndUpdate();
             }
@@ -52,25 +57,45 @@ namespace RunTimeDebuggers
             }
         }
 
-        private class FormItem
+        private abstract class FormItem
         {
-            public FormItem(Form frm)
+            public FormItem(object frm)
             {
                 this.Form = frm;
             }
-            public Form Form { get; set; }
+            public object Form { get; set; }
+        }
+
+        private class WinFormsFormItem : FormItem
+        {
+            public WinFormsFormItem(object frm)
+                : base(frm)
+            { }
 
             public override string ToString()
             {
-                return Form.GetType().Name + " - [Text: " + Form.Text + "]";
+                return Form.GetType().Name + " - [Text: " + ((System.Windows.Forms.Form)Form).Text + "] <<WinForms>>";
             }
         }
+
+        private class WPFFormItem : FormItem
+        {
+            public WPFFormItem(object frm)
+                : base(frm)
+            { }
+
+            public override string ToString()
+            {
+                return Form.GetType().Name + " - [Text: " + ((System.Windows.Window)Form).Title + "] <<WPF>>";
+            }
+        }
+
 
         private void btnOpenLocals_Click(object sender, EventArgs e)
         {
             if (lstOpenForms.SelectedIndex >= 0)
             {
-                Form frm = ((FormItem)lstOpenForms.Items[lstOpenForms.SelectedIndex]).Form;
+                object frm = ((FormItem)lstOpenForms.Items[lstOpenForms.SelectedIndex]).Form;
                 LocalsWindow dlg = new LocalsWindow("", frm);
                 dlg.FormClosed += (s, ev) => dlg.Dispose();
                 dlg.Show();
