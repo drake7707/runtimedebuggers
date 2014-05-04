@@ -162,7 +162,7 @@ namespace RunTimeDebuggers.AssemblyExplorer
             TaskFactory tasks = new TaskFactory(4);
 
             var ui = WindowsFormsSynchronizationContext.Current;
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies().OrderBy(ass => ass.GetName().Name))
             {
 
                 AssemblyNode an = new AssemblyNode(a);

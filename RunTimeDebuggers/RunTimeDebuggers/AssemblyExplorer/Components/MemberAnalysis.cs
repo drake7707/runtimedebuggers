@@ -151,9 +151,14 @@ namespace RunTimeDebuggers.AssemblyExplorer
             else
                 source = m.Source;
 
-            var n = new EventWireNode((EventInfo)memberCache.SpecialReference, source, true);
-            n.Nodes.Clear();
-            return n;
+            if (memberCache.SpecialReference != null)
+            {
+                var n = new EventWireNode((EventInfo)memberCache.SpecialReference, source, true);
+                n.Nodes.Clear();
+                return n;
+            }
+            else
+                return null;
         }
 
 
@@ -215,7 +220,8 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
             public override List<RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock> Visualization
             {
-                get { 
+                get
+                {
                     return new List<VisualizerHelper.CodeBlock>() 
                     {
                         new RunTimeDebuggers.Helpers.VisualizerHelper.CodeBlock(Text)

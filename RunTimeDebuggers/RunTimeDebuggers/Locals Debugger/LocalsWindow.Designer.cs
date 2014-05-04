@@ -55,17 +55,17 @@ namespace RunTimeDebuggers.LocalsDebugger
             this.tmrMouseOver = new System.Windows.Forms.Timer(this.components);
             this.toolStrip1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitVert)).BeginInit();
+            
             this.splitVert.Panel1.SuspendLayout();
             this.splitVert.Panel2.SuspendLayout();
             this.splitVert.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tree)).BeginInit();
+            
             this.tabPage2.SuspendLayout();
             this.mnuLookupInLocals.SuspendLayout();
             this.mnuLookupInAssemblyExplorer.SuspendLayout();
@@ -395,15 +395,15 @@ namespace RunTimeDebuggers.LocalsDebugger
             this.tableLayoutPanel1.PerformLayout();
             this.splitVert.Panel1.ResumeLayout(false);
             this.splitVert.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitVert)).EndInit();
+            
             this.splitVert.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            
             this.splitContainer1.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.tree)).EndInit();
+            
             this.tabPage2.ResumeLayout(false);
             this.mnuLookupInLocals.ResumeLayout(false);
             this.mnuLookupInAssemblyExplorer.ResumeLayout(false);

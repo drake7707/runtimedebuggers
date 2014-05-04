@@ -224,16 +224,16 @@ namespace RunTimeDebuggers.AssemblyExplorer
 
                 try
                 {
-                    foreach (var ev in t.GetEventsOfType(false, true))
+                    foreach (var ev in t.GetEventsOfType(true, true))
                     {
                         var addMethod = ev.GetAddMethod(true);
-                        if (addMethod != null)
+                        if (addMethod != null && addMethod.DeclaringType == t)
                             BuildCacheFor(addMethod, MethodBaseCache.SpecialMethodEnum.EventAdd, ev, addMethod);
                         var removeMethod = ev.GetRemoveMethod(true);
-                        if (removeMethod != null)
+                        if (removeMethod != null && removeMethod.DeclaringType == t)
                             BuildCacheFor(removeMethod, MethodBaseCache.SpecialMethodEnum.EventRemove, ev, removeMethod);
                         var raiseMethod = ev.GetRaiseMethod(true);
-                        if (raiseMethod != null)
+                        if (raiseMethod != null && raiseMethod.DeclaringType == t)
                             BuildCacheFor(raiseMethod, MethodBaseCache.SpecialMethodEnum.EventRaise, ev, raiseMethod);
                     }
 
