@@ -3,6 +3,7 @@ Allows you to inject a library in another process, to inspect all the loaded ass
 
 --
 **02 jan 2014**
+
 There are a few bugs that crept in the release I made, mainly due to my struggle with the resource files and .NET 2 <-> .NET 4 (missing icons and such). The resource pane also seems to be borked and there's still a System.Diagnostics.Debugger.Break() without an System.Diagnostics.Debugger.IsAttached, so if you hit that one, it will generate an exception. I demoted the current release to beta, and will make a new version once the issues are resolved.
 Update: the above issues are resolved in the source code
 --
