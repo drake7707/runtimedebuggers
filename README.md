@@ -20,20 +20,20 @@ Note: if you don't have C++ installed then you can ignore the ManagedInjector pr
 ## Screenshots
 
 **Inject into**
-![](Home_http://i.imgur.com/6VVOCrp.png)
+![](http://i.imgur.com/6VVOCrp.png)
 
 **Assembly explorer**
-![](Home_http://i.imgur.com/Cj6esLd.png)
-![](Home_http://i.imgur.com/6z4Jssuh.png)
-![](Home_http://i.imgur.com/y5bOVSIh.png)
+![](http://i.imgur.com/Cj6esLd.png)
+![](http://i.imgur.com/6z4Jssuh.png)
+![](http://i.imgur.com/y5bOVSIh.png)
 
 **Locals & watches**
-![](Home_http://i.imgur.com/d0KpREz.png)
-![](Home_http://i.imgur.com/dKsbrwj.png)
+![](http://i.imgur.com/d0KpREz.png)
+![](http://i.imgur.com/dKsbrwj.png)
 
 **IL Debugging (very big WIP)**
-![](Home_http://i.imgur.com/4uNQfR5h.png)
+![](http://i.imgur.com/4uNQfR5h.png)
 
 **Decrypt strings**
-![](Home_http://i.imgur.com/1qmoWQf.gif)
+![](http://i.imgur.com/1qmoWQf.gif)
 
